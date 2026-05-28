@@ -1,0 +1,44 @@
+% Generated from runs/rvq_like-3970494.log.
+% The Slurm job was cancelled before the sweep finished, so only completed
+% configurations are included. The no-Hadamard comparison is currently
+% available only for 4.15 bpp.
+
+\begin{table}[t]
+\centering
+\small
+\caption{Comparison of RVQ with $d=8$ and $d=16$ on completed sweep points. Higher Score and CLIP-I are better; lower LPIPS is better.}
+\label{tab:rvq_d8_d16_quality}
+\begin{tabular}{lllrrrrrrr}
+\hline
+BPP & Transform & Block & Score, $d=8$ & Score, $d=16$ & $\Delta$ & LPIPS, $d=8$ & LPIPS, $d=16$ & CLIP-I, $d=8$ & CLIP-I, $d=16$ \\
+\hline
+4.15 & H  & 8  & \textbf{0.7927} & 0.7861 & +0.0066 & \textbf{0.1203} & 0.1243 & \textbf{0.9130} & 0.9104 \\
+3.15 & H  & 8  & \textbf{0.6892} & 0.6579 & +0.0313 & \textbf{0.1819} & 0.2006 & \textbf{0.8711} & 0.8585 \\
+2.15 & H  & 8  & \textbf{0.5803} & 0.5707 & +0.0096 & \textbf{0.2481} & 0.2537 & \textbf{0.8284} & 0.8244 \\
+4.15 & H  & 16 & \textbf{0.7842} & 0.7473 & +0.0370 & \textbf{0.1264} & 0.1465 & \textbf{0.9107} & 0.8938 \\
+3.15 & H  & 16 & \textbf{0.6883} & 0.6613 & +0.0269 & \textbf{0.1830} & 0.1964 & \textbf{0.8712} & 0.8577 \\
+2.15 & H  & 16 & \textbf{0.5859} & 0.5587 & +0.0271 & \textbf{0.2464} & 0.2575 & \textbf{0.8323} & 0.8162 \\
+4.15 & noH & -- & \textbf{0.7761} & 0.7565 & +0.0196 & \textbf{0.1314} & 0.1414 & \textbf{0.9075} & 0.8979 \\
+\hline
+\end{tabular}
+\end{table}
+
+\begin{table}[t]
+\centering
+\small
+\caption{RVQ codebook training time for the same completed sweep points. The $d=16$ variant is consistently close to twice as expensive.}
+\label{tab:rvq_d8_d16_time}
+\begin{tabular}{lllrrr}
+\hline
+BPP & Transform & Block & Time $d=8$, s & Time $d=16$, s & Ratio \\
+\hline
+4.15 & H  & 8  & 599.3 & 1166.6 & 1.95 \\
+3.15 & H  & 8  & 443.8 & 872.3  & 1.97 \\
+2.15 & H  & 8  & 298.3 & 582.3  & 1.95 \\
+4.15 & H  & 16 & 593.9 & 1159.8 & 1.95 \\
+3.15 & H  & 16 & 443.9 & 875.5  & 1.97 \\
+2.15 & H  & 16 & 295.5 & 578.5  & 1.96 \\
+4.15 & noH & -- & 589.9 & 1158.4 & 1.96 \\
+\hline
+\end{tabular}
+\end{table}

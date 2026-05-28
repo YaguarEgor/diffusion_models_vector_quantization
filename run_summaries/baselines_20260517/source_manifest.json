@@ -1,0 +1,17 @@
+{
+  "created": "2026-05-17",
+  "metric_score": "score = CLIP image-image - LPIPS; higher is better",
+  "sources": {
+    "scalar_ptq": "runs/scalar_ptq_3997959/scalar_ptq_summary.csv",
+    "qdiffusion_lite": "runs/qdiffusion_lite_3997985/qdiffusion_lite_summary.csv",
+    "ptq4dm_lite": "runs/ptq4dm_lite_3998143/ptq4dm_lite_summary.csv",
+    "vqdm_partial": "runs/vqdm_pickscore_sweep_20260516_100817/vqdm_pickscore_sweep_summary.csv",
+    "rvq_reference": "run_summaries/all_completed_rvq_funnel_results.csv",
+    "rvq_jobb_v2_secondary": "run_summaries/rvq_jobb_20260514_005518_summary.csv"
+  },
+  "notes": [
+    "Scalar PTQ, QDiffusion-lite, PTQ4DM-lite completed fully.",
+    "VQDM run was cancelled by Slurm after saving 7 rows; hardcoded_10_linear is complete for 4.15/3.15/2.15, plus_conv only has 4.15.",
+    "RVQ profile-best rows can exceed target bpp in K ablations; strict-bpp rows require index_bpp <= target_bpp."
+  ]
+}

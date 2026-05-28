@@ -1,0 +1,41 @@
+{
+  "created_at_local": "2026-05-23T12:26:22",
+  "run_selection": "fresh root runs from 2026-05-23: job ids 4005710-4005714",
+  "sources": [
+    {
+      "method": "Scalar PTQ",
+      "run_dir": "scalar_ptq_4005714",
+      "summary_csv": "D:/Пользователи/Egor0/Документы/Egor/Уник/cursovaya/runs/scalar_ptq_4005714/scalar_ptq_summary.csv",
+      "copied_summary_csv": "D:/Пользователи/Egor0/Документы/Egor/Уник/cursovaya/run_summaries/baselines_20260523_full_midblock/scalar_ptq_summary.csv"
+    },
+    {
+      "method": "Q-Diffusion-lite",
+      "run_dir": "qdiffusion_lite_4005713",
+      "summary_csv": "D:/Пользователи/Egor0/Документы/Egor/Уник/cursovaya/runs/qdiffusion_lite_4005713/qdiffusion_lite_summary.csv",
+      "copied_summary_csv": "D:/Пользователи/Egor0/Документы/Egor/Уник/cursovaya/run_summaries/baselines_20260523_full_midblock/qdiffusion_lite_summary.csv"
+    },
+    {
+      "method": "PTQ4DM-lite",
+      "run_dir": "ptq4dm_lite_4005712",
+      "summary_csv": "D:/Пользователи/Egor0/Документы/Egor/Уник/cursovaya/runs/ptq4dm_lite_4005712/ptq4dm_lite_summary.csv",
+      "copied_summary_csv": "D:/Пользователи/Egor0/Документы/Egor/Уник/cursovaya/run_summaries/baselines_20260523_full_midblock/ptq4dm_lite_summary.csv"
+    },
+    {
+      "method": "BitsFusion-lite",
+      "run_dir": "bitsfusion_lite_4005711",
+      "summary_csv": "D:/Пользователи/Egor0/Документы/Egor/Уник/cursovaya/runs/bitsfusion_lite_4005711/bitsfusion_lite_summary.csv",
+      "copied_summary_csv": "D:/Пользователи/Egor0/Документы/Egor/Уник/cursovaya/run_summaries/baselines_20260523_full_midblock/bitsfusion_lite_summary.csv"
+    },
+    {
+      "method": "AQUATIC-Diff-like",
+      "run_dir": "aquatic_diff_lite_4005710",
+      "summary_csv": "D:/Пользователи/Egor0/Документы/Egor/Уник/cursovaya/runs/aquatic_diff_lite_4005710/aquatic_diff_lite_summary.csv",
+      "copied_summary_csv": "D:/Пользователи/Egor0/Документы/Egor/Уник/cursovaya/run_summaries/baselines_20260523_full_midblock/aquatic_diff_lite_summary.csv"
+    }
+  ],
+  "notes": [
+    "All selected runs evaluate full SD1.5 mid_block with Linear+Conv2d targets where applicable.",
+    "Each selected run reports 32 prompts x 3 seeds = 96 eval images.",
+    "BitsFusion-lite undershot every declared target to the same actual bpp=1.3701 in this run; treat it as a low-bpp mixed scalar point until allocation is fixed or intentionally justified."
+  ]
+}

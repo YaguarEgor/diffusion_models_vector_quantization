@@ -1,0 +1,4 @@
+source,job_id,stage,scope,target_bpp,index_bpp,d,K,family,hadamard_block,score,lpips,clip_ii,clip_ti,n,quant_s,eval_s,label,selection_note
+rvq_like-3988130,3988130,B:noH,hardcoded_linear,4.150000,4.000000,8,256,noH,,0.800970,0.117501,0.918471,0.311721,96,601.900000,229.500000,B:noH | hardcoded_linear | target~4.15bpp d=8 | no Hadamard,best score per target with index_bpp <= target_bpp
+rvq_like-3988130,3988130,A:K256-d-block,hardcoded_linear,3.150000,3.000000,8,256,H,8,0.712077,0.171229,0.883306,0.309125,96,461.900000,220.900000,"A:K256-d-block | hardcoded_linear | target~3.15bpp d=8 | Hadamard block=8, signs=False",best score per target with index_bpp <= target_bpp
+rvq_like-3988130,3988130,A:K256-d-block,hardcoded_linear,2.150000,2.000000,8,256,H,16,0.590704,0.241295,0.831999,0.302381,96,304.800000,217.200000,"A:K256-d-block | hardcoded_linear | target~2.15bpp d=8 | Hadamard block=16, signs=False",best score per target with index_bpp <= target_bpp

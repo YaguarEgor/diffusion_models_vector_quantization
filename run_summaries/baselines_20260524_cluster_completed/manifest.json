@@ -1,0 +1,67 @@
+{
+  "included": [
+    {
+      "method": "VQDM",
+      "run_dir": "vqdm_full_midblock_4036922",
+      "job_id": "4036922",
+      "summary_csv": "vqdm_4036922_full_summary.csv",
+      "rows": 3,
+      "scope_note": "full midblock, 18 layers",
+      "finished": true
+    },
+    {
+      "method": "BitsFusion-lite",
+      "run_dir": "bitsfusion_lite_4035831",
+      "job_id": "4035831",
+      "summary_csv": "bitsfusion_lite_4035831_full_summary.csv",
+      "rows": 4,
+      "scope_note": "full midblock, 18 layers",
+      "finished": true
+    },
+    {
+      "method": "Vanilla VQ",
+      "run_dir": "vanilla_vq_4035902",
+      "job_id": "4035902",
+      "summary_csv": "vanilla_vq_4035902_full_summary.csv",
+      "rows": 5,
+      "scope_note": "full midblock, 18 layers",
+      "finished": true
+    },
+    {
+      "method": "Vanilla VQ",
+      "run_dir": "vanilla_vq_4035907",
+      "job_id": "4035907",
+      "summary_csv": "vanilla_vq_4035907_full_summary.csv",
+      "rows": 5,
+      "scope_note": "full midblock, 18 layers, duplicate seed/check run",
+      "finished": true
+    },
+    {
+      "method": "AQUATIC-Diff-like",
+      "run_dir": "aquatic_diff_lite_vqdmstyle16_4035857",
+      "job_id": "4035857",
+      "summary_csv": "aquatic_diff_like_4035857_full_summary.csv",
+      "rows": 4,
+      "scope_note": "VQDM-style 16 layers, time_emb_proj skipped",
+      "finished": true
+    }
+  ],
+  "excluded_partial": [
+    {
+      "run": "vqdm_full_midblock_4035853",
+      "reason": "partial/cancelled; superseded by completed VQDM 4036922"
+    },
+    {
+      "run": "vqdm_vqdmstyle16_4035855",
+      "reason": "partial/cancelled; only first VQDM-style16 profile finished"
+    },
+    {
+      "run": "rvq_like-4035923",
+      "reason": "partial/cancelled RVQ full 18; no final summary"
+    },
+    {
+      "run": "rvq_like-4035950",
+      "reason": "partial/cancelled RVQ VQDM-style16; no final summary"
+    }
+  ]
+}

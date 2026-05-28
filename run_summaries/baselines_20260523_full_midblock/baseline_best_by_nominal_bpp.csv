@@ -1,0 +1,5 @@
+bpp_family_by_declared,best_score_method,best_score_label,best_score,best_score_actual_bpp,best_clip_ii_method,best_clip_ii_label,best_clip_ii,best_clip_ii_actual_bpp,rows_in_family
+4-ish,Q-Diffusion-lite,qdiff_lite_w4,0.7221490559362186,4.005278716216216,PTQ4DM-lite,ptq4dm_lite_w4,0.8764184187166393,4.005278716216216,5
+3-ish,AQUATIC-Diff-like,aquatic_diff_lite_bpp3_m3_k256_d8,0.6010798707332773,3.0182432432432433,AQUATIC-Diff-like,aquatic_diff_lite_bpp3_m3_k256_d8,0.8282707529142499,3.0182432432432433,5
+2-ish,AQUATIC-Diff-like,aquatic_diff_lite_bpp2_m2_k256_d8,0.47052018491861725,2.0121621621621624,AQUATIC-Diff-like,aquatic_diff_lite_bpp2_m2_k256_d8,0.7722517408741018,2.0121621621621624,6
+1.5-ish/low,AQUATIC-Diff-like,aquatic_diff_lite_bpp1p5_m2_k64_d8,0.3476539934054017,1.5030405405405405,AQUATIC-Diff-like,aquatic_diff_lite_bpp1p5_m2_k64_d8,0.7151239784434438,1.5030405405405405,1

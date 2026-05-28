@@ -1,0 +1,5 @@
+actual_bpp_window,lo,hi,best_score_method,best_score_label,best_score,best_actual_bpp,rows_in_window
+actual_4bpp_window,3.5,4.5,Q-Diffusion-lite,qdiff_lite_w4,0.7221490559362186,4.005278716216216,4
+actual_3bpp_window,2.5,3.5,AQUATIC-Diff-like,aquatic_diff_lite_bpp3_m3_k256_d8,0.6010798707332773,3.0182432432432433,4
+actual_2bpp_window,1.75,2.5,AQUATIC-Diff-like,aquatic_diff_lite_bpp2_m2_k256_d8,0.47052018491861725,2.0121621621621624,4
+actual_1_1p75bpp_window,1.0,1.75,BitsFusion-lite,bitsfusion_lite_t4p15bpp_bits1x2x3x4,0.41884530335664744,1.3701435810810811,5

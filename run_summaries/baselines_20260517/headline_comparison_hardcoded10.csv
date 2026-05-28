@@ -1,0 +1,4 @@
+target_bpp,rvq_profile_score,rvq_profile_index_bpp,rvq_strict_score,rvq_strict_index_bpp,best_non_vqdm_family,best_non_vqdm_score,best_non_vqdm_bpp,rvq_profile_minus_non_vqdm,rvq_strict_minus_non_vqdm,vqdm_hardcoded_score,vqdm_hardcoded_bpp,rvq_profile_minus_vqdm,rvq_strict_minus_vqdm,strict_verdict
+4.150000,0.800970,4.000000,0.800970,4.000000,PTQ4DM-lite,0.762931,4.011068,0.038039,0.038039,0.843735,4.052734,-0.042765,-0.042765,RVQ strict loses to VQDM
+3.150000,0.761580,3.380000,0.712077,3.000000,QDiffusion-lite,0.609685,3.011068,0.151895,0.102392,0.754069,3.042318,0.007511,-0.041992,RVQ strict loses to VQDM
+2.150000,0.626237,2.250000,0.590704,2.000000,PTQ4DM-lite,0.413379,2.011068,0.212858,0.177325,0.641448,2.031901,-0.015211,-0.050744,RVQ strict loses to VQDM

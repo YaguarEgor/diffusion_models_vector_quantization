@@ -1,0 +1,47 @@
+# Pinned runtime used by quantize-vector-jobb.py.
+# Default install target: Python 3.12/3.11 + NVIDIA H100/V100-compatible CUDA 11.8 wheels.
+# The runner script prefers Python 3.12/3.11 because torch==2.4.1+cu118 is not
+# available for Python 3.13 on the configured package indexes.
+# The runner script always creates/updates .venv_jobb and installs this file there.
+
+--extra-index-url https://download.pytorch.org/whl/cu118
+--prefer-binary
+
+torch==2.4.1+cu118
+torchvision==0.19.1+cu118
+
+diffusers==0.31.0
+transformers==4.46.3
+accelerate==1.1.1
+safetensors==0.4.5
+huggingface_hub==0.26.5
+
+open_clip_torch==2.26.1
+lpips==0.1.4
+# Optional: hpsv2 is only needed when RVQ_COMPUTE_HPS=1. It is not available
+# on the configured package index in this environment, and HPS is disabled by default.
+
+numpy==1.26.4
+matplotlib==3.8.4
+tqdm==4.67.1
+Pillow==10.4.0
+
+# Explicit transitive deps. Cluster images sometimes contain partial package sets.
+contourpy==1.3.0
+cycler==0.12.1
+fonttools==4.55.3
+kiwisolver==1.4.7
+packaging==24.2
+pyparsing==3.2.0
+python-dateutil==2.9.0.post0
+pytz==2024.2
+tzdata==2024.2
+six==1.17.0
+regex==2024.11.6
+ftfy==6.3.1
+wcwidth==0.2.13
+requests==2.32.3
+PyYAML==6.0.2
+filelock==3.16.1
+fsspec==2024.10.0
+tokenizers==0.20.3

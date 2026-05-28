@@ -1,0 +1,8 @@
+job_id,run,kind,mode,target_mode,status,processed,reason
+4038092,vqdm_like,VQDM,,hardcoded_midblock,complete,yes,Final summary and CSV found; no fatal stderr pattern.
+4038093,vanilla_vq,Vanilla-VQ,,hardcoded_midblock,complete,yes,Final summary and CSV found; no fatal stderr pattern.
+4038094,aquatic_diff_lite,AQUATIC-Diff-lite,,all_midblock,complete,yes,Final summary and CSV found; no fatal stderr pattern.
+4038095,aquatic_diff_lite,AQUATIC-Diff-lite,,hardcoded_midblock,complete,yes,Final summary and CSV found; no fatal stderr pattern.
+4038138,rvq_like,RVQ,noH,all_midblock,partial,no,No final summary/CSV; copied log ends during sweep after 4 intermediate SWEEP RESULT rows.
+4038139,rvq_like,RVQ,H8,all_midblock,partial,no,No final summary/CSV; copied log ends during eval/sweep after 2 intermediate SWEEP RESULT rows.
+4038142,rvq_like,RVQ,H16,all_midblock,partial,no,No final summary/CSV; copied log ends during first quantization/eval; no SWEEP RESULT row yet.

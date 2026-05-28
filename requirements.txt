@@ -1,0 +1,48 @@
+# Self-contained environment for the quantization scripts.
+# Target: Python 3.10-3.12 + NVIDIA V100/H100. CUDA 11.8 wheels are the safer
+# default for V100 clusters with older drivers. Python 3.13 is not supported by
+# the torch==2.4.1+cu118 pin on the package indexes used for these runs.
+
+--extra-index-url https://download.pytorch.org/whl/cu118
+--prefer-binary
+
+torch==2.4.1+cu118
+torchvision==0.19.1+cu118
+
+diffusers==0.31.0
+transformers==4.46.3
+accelerate==1.1.1
+safetensors==0.4.5
+huggingface_hub==0.26.5
+
+open_clip_torch==2.26.1
+lpips==0.1.4
+# Optional: hpsv2 is only needed when *_COMPUTE_HPS=1. It is intentionally not
+# pinned here because it was unavailable on the cluster package index.
+
+numpy==1.26.4
+pandas==2.2.3
+matplotlib==3.8.4
+tqdm==4.67.1
+Pillow==10.4.0
+
+# Explicit transitive deps. Some cluster images contain partially installed
+# packages, so pip may see the top-level package but miss its runtime deps.
+contourpy==1.3.0
+cycler==0.12.1
+fonttools==4.55.3
+kiwisolver==1.4.7
+packaging==24.2
+pyparsing==3.2.0
+python-dateutil==2.9.0.post0
+pytz==2024.2
+tzdata==2024.2
+six==1.17.0
+regex==2024.11.6
+ftfy==6.3.1
+wcwidth==0.2.13
+requests==2.32.3
+PyYAML==6.0.2
+filelock==3.16.1
+fsspec==2024.10.0
+tokenizers==0.20.3
