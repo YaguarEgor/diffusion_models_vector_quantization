@@ -5699,6 +5699,11 @@ def run_hadamard_sweep_chunk(chunk_specs, chunk_label: str):
                 f"SWEEP RESULT | {label} | index_bpp={spec['index_bpp']:.2f} | "
                 f"score={score:.6f} | agg={agg}"
             )
+            if rvq_fixed_transform_sweep:
+                try:
+                    write_rvq_fixed_sweep_results(hadamard_sweep_results, RVQ_FIXED_SWEEP_OUTPUT_DIR)
+                except Exception as exc:
+                    print(f"WARNING: failed to checkpoint RVQ sweep results after {label}: {exc}")
 
             del pipe_q, unet_q
             if torch.cuda.is_available():
@@ -5915,13 +5920,20 @@ def write_rvq_funnel_results(results: Sequence[Dict[str, Any]], path: str):
     print(f"RVQ funnel results written to: {out.resolve()}")
 
 
+_rvq_fixed_default_output_dir: Optional[Path] = None
+
+
 def _default_rvq_fixed_sweep_output_dir() -> Path:
+    global _rvq_fixed_default_output_dir
+    if _rvq_fixed_default_output_dir is not None:
+        return _rvq_fixed_default_output_dir
     job_id = os.environ.get("SLURM_JOB_ID", "").strip()
     if job_id:
         run_name = f"rvq_fixed_sweep_{job_id}"
     else:
         run_name = f"rvq_fixed_sweep_{time.strftime('%Y%m%d_%H%M%S')}"
-    return Path("runs") / run_name
+    _rvq_fixed_default_output_dir = Path("runs") / run_name
+    return _rvq_fixed_default_output_dir
 
 
 def _rvq_result_summary_row(result: Dict[str, Any]) -> Dict[str, Any]:

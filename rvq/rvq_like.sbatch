@@ -2,9 +2,9 @@
 #SBATCH --job-name=rvq_like
 #SBATCH --output=runs/rvq_like-%j.log
 #SBATCH --error=runs/rvq_like-%j.err
-#SBATCH --gpus=4
+#SBATCH --gpus=1
 #SBATCH --cpus-per-task=8
-#SBATCH --time=24:00:00
+#SBATCH --time=20:00:00
 #SBATCH --constraint="[type_a|type_b|type_c]"
 
 set -euo pipefail
@@ -14,7 +14,7 @@ module load Python/Anaconda_v03.2023
 source "$(conda info --base)/etc/profile.d/conda.sh"
 conda deactivate || true
 conda activate vec_quant
-
+``
 cd "${SLURM_SUBMIT_DIR}"
 mkdir -p runs
 

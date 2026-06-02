@@ -12,6 +12,10 @@
 - full-XTX post-RVQ recoding: codebooks фиксируются, а assignments дооптимизируются под полный XTX-функционал;
 - diffusion-aware calibration через prompts/seeds/timesteps/activation statistics.
 
+Отдельный follow-up по размерности фрагмента:
+- старый отрицательный результат для `d=16` был получен при `K=256`, где для сохранения bpp приходилось увеличивать число RVQ-стадий;
+- нужно отдельно проверить увеличение `d` вместе с увеличением `K`, не меняя число кодбуков, чтобы понять, помогает ли более длинный фрагмент при достаточной емкости кодбука.
+
 ## 1. Возможные бейзлайны
 
 Эти работы нужны, чтобы понять, с кем сравниваться по качеству, bpp и сложности запуска.
@@ -87,8 +91,21 @@ Post-training vector quantization для Diffusion Transformers.
 - близок к нашей логике: codebooks уже обучены, дальше улучшаем codes.
 
 Текущий вывод по нашим запускам:
-- final full-XTX recoding выглядит полезным и должен оставаться включенным;
+- full-XTX recoding стабильно уменьшает внутренний activation-aware / XTX loss, но по внешним image-метрикам эффект смешанный: в sweep с разными `K` он в среднем улучшал Score, а при фиксированном `K=256` часть строк ухудшалась;
+- нужно еще раз пересмотреть стратегию использования recoding перед финальной формулировкой метода: сравнить `recode=0/1/2` на лучших RVQ-конфигурациях и решить, оставлять ли его всегда включенным или подавать как отдельную опцию;
 - local recode после каждой RVQ-стадии пока выглядит вредным: он слишком рано оптимизирует частичный residual и мешает следующим стадиям.
+
+Что важно не перепутать по сохраненным запускам:
+- uniform `K` sweep (`K=128/256/512`) есть с разными final full-XTX recode passes (`0/1/2/4`), но без stage-wise `K` и без local recode;
+- stage-wise `K` sweep есть только в основном pipeline с final full-XTX recode включенным (`recode_passes=1`);
+- local recode проверялся тоже поверх stage-wise `K` и уже включенного final full-XTX recode;
+- поэтому нельзя утверждать, что stage-wise `K` или local recode были измерены полностью независимо от final recoding.
+
+Чистый факторный запуск, если понадобится:
+- stage-wise `K`, `final_recode=0`, `local=0`;
+- stage-wise `K`, `final_recode=0`, `local=1`;
+- stage-wise `K`, `final_recode=1`, `local=0`;
+- stage-wise `K`, `final_recode=1`, `local=1`.
 
 ## 4. Сбор активаций и calibration
 

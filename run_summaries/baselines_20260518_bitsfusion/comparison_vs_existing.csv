@@ -1,4 +1,0 @@
-target_bpp,bitsfusion_bpp,bitsfusion_score,bitsfusion_lpips,bitsfusion_clip_ii,old_best_non_vqdm_family,old_best_non_vqdm_score,delta_bitsfusion_vs_old_non_vqdm,rvq_strict_score,delta_bitsfusion_vs_rvq_strict,rvq_profile_score,delta_bitsfusion_vs_rvq_profile,vqdm_score,delta_bitsfusion_vs_vqdm
-4.15,4.136068,0.772305,0.125759,0.898063,PTQ4DM-lite,0.762931,0.009374,0.800970,-0.028665,0.800970,-0.028665,0.843735,-0.071430
-3.15,3.125651,0.630137,0.207425,0.837562,QDiffusion-lite,0.609685,0.020452,0.712077,-0.081940,0.761580,-0.131443,0.754069,-0.123932
-2.15,2.136068,0.522359,0.272933,0.795292,PTQ4DM-lite,0.413379,0.108980,0.590704,-0.068345,0.626237,-0.103878,0.641448,-0.119089

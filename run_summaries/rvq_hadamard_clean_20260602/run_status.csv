@@ -1,0 +1,2 @@
+﻿"job_id","rows","expected_rows","status","source_dir","target_mode","include_conv","d","K","recode","stage_k_sweep"
+"4066076","39","39","complete","runs/rvq_hadamard_clean_4066076","hardcoded_midblock","0","8","256","0","0"

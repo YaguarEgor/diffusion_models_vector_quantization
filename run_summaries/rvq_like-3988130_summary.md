@@ -5,7 +5,7 @@ Source logs:
 - `runs/rvq_like-3988130.err`
 
 Structured table:
-- `run_summaries/rvq_like-3988130_results.csv`
+- completed rows were later folded into `run_summaries/all_completed_rvq_funnel_results.csv`
 
 ## Status
 

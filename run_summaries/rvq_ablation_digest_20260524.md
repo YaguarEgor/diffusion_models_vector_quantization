@@ -1,17 +1,12 @@
 # RVQ Ablation Digest 2026-05-24
 
 Sources:
-- `rvq_completed_results.csv`
-- `rvq_like-3988130_results.csv`
 - `all_completed_rvq_funnel_results.csv`
-- `jobb_20260513_001931_summary.csv`
-- `rvq_jobb_20260514_005518_summary.csv`
-- `rvq_jobb_20260514_005518_top20.csv`
-- `quant_v2_20260514_005518_summary.md`
-- `baselines_20260517/README.md`
-- `baselines_20260517/rvq_best_hardcoded10_profile_best.csv`
-- `baselines_20260517/rvq_best_hardcoded10_strict_bpp.csv`
-- `baselines_20260517/rvq_jobb_v2_best_hardcoded10.csv`
+- `rvq_jobb_ablation_20260513_14/jobb_20260513_001931_summary.csv`
+- `rvq_jobb_ablation_20260513_14/rvq_jobb_20260514_005518_summary.csv`
+- `rvq_jobb_ablation_20260513_14/rvq_jobb_20260514_005518_top20.csv`
+- `rvq_jobb_ablation_20260513_14/quant_v2_20260514_005518_summary.md`
+- archived hardcoded-10 baseline comparison tables that were later removed from the compact summary tree
 
 Metric: `score = CLIP image-image - LPIPS`, unless noted otherwise.
 
@@ -59,7 +54,7 @@ Conclusion: `d=8` is both better and faster.
 
 ## Hadamard Blocks, K=256
 
-From `rvq_like-3988130_results.csv`.
+From completed rows preserved in `all_completed_rvq_funnel_results.csv`.
 
 | target bpp | best variant | score | LPIPS | CLIP i-i | note |
 |---:|---|---:|---:|---:|---|
@@ -71,7 +66,7 @@ Conclusion: if using old uniform `K=256`, the only Hadamard block worth keeping 
 
 ## Uniform K Ablation
 
-From `rvq_like-3988130_results.csv`.
+From completed rows preserved in `all_completed_rvq_funnel_results.csv`.
 
 | target bpp | K | best variant | index bpp | score | LPIPS | CLIP i-i | quant s |
 |---:|---:|---|---:|---:|---:|---:|---:|
@@ -142,7 +137,7 @@ Conclusion: disable local recode in final runs.
 
 ## Baseline Cross-Check
 
-From `baselines_20260517/README.md` and the RVQ comparison CSVs. Scope: hardcoded 10 Linear layers.
+From archived hardcoded-10 baseline comparison tables. Scope: hardcoded 10 Linear layers.
 
 | target bpp | RVQ profile-best | RVQ strict-bpp | best non-VQDM baseline | VQDM hardcoded | strict verdict |
 |---:|---:|---:|---|---:|---|

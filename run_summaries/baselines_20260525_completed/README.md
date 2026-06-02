@@ -7,7 +7,6 @@ Compact summaries from the root `runs` folder. Raw logs and JSON row dumps are n
 | file | contents |
 |---|---|
 | `completed_baselines_compact.csv` | Normalized compact table across all completed baseline runs. |
-| `run_status.csv` | Completed vs partial run status for the logs present in `runs`. |
 | `vqdm_4038092_summary.csv` | Original compact VQDM summary CSV. |
 | `vanilla_vq_4038093_summary.csv` | Original compact Vanilla-VQ summary CSV. |
 | `aquatic_diff_lite_4038094_all18_summary.csv` | Original compact AQUATIC-Diff-lite 18-layer summary CSV. |
@@ -24,16 +23,6 @@ Compact summaries from the root `runs` folder. Raw logs and JSON row dumps are n
 
 No fatal `Traceback`, `RuntimeError`, OOM, Slurm cancel, or killed patterns were found in the copied stderr files.
 
-## Not Complete Yet
-
-| job | run | mode | status |
-|---:|---|---|---|
-| 4038138 | RVQ | noH, all_midblock | partial: 4 intermediate sweep rows, no final summary |
-| 4038139 | RVQ | H8, all_midblock | partial: 2 intermediate sweep rows, no final summary |
-| 4038142 | RVQ | H16, all_midblock | partial: no completed sweep row yet |
-
-These RVQ rows are useful as live-progress hints, but they are not archived as completed results here.
-
 ## Main Takeaways
 
 VQDM is still the strongest completed vector baseline in this batch. At roughly 4/3/2 bpp it gets score 0.800/0.751/0.618 with CLIP i-i 0.919/0.901/0.847.
@@ -42,4 +31,4 @@ Vanilla-VQ is a deliberately lower VQ baseline. It reaches 0.717 at 4 bpp, 0.617
 
 AQUATIC-Diff-lite is below VQDM here. The 16-layer run is slightly better than the 18-layer run at 4 and 2 bpp, but the difference is small enough that it should be treated as a scope/eval comparison, not a strong algorithmic conclusion.
 
-Among completed baselines, the target to beat remains VQDM. The current copied RVQ logs are not finished, so they should not be used for the final comparison yet.
+Among completed baselines, the target to beat remains VQDM. Final RVQ comparisons are tracked separately in `../rvq_final_20260531/`.

@@ -1,5 +1,0 @@
-﻿"job_id","run","status","summary","note"
-"4038092","vqdm_like","complete_already_summarized","run_summaries/baselines_20260525_completed/vqdm_4038092_summary.csv","Same completed VQDM run seen earlier."
-"4038093","vanilla_vq","complete_already_summarized","run_summaries/baselines_20260525_completed/vanilla_vq_4038093_summary.csv","Same completed Vanilla-VQ run seen earlier."
-"4038094","aquatic_diff_lite","complete_already_summarized","run_summaries/baselines_20260525_completed/aquatic_diff_lite_4038094_all18_summary.csv","Same completed AQUATIC 18-layer run seen earlier."
-"4038095","aquatic_diff_lite","complete_already_summarized","run_summaries/baselines_20260525_completed/aquatic_diff_lite_4038095_vqdm16_summary.csv","Same completed AQUATIC 16-layer run seen earlier."

@@ -1,4 +1,0 @@
-target_bpp,rvq_scope,rvq_best_mode,rvq_stage_Ks,rvq_index_bpp,rvq_score,rvq_lpips,rvq_clip_ii,vqdm18_score,vqdm18_lpips,vqdm18_clip_ii,delta_score_vs_vqdm18,delta_lpips_vs_vqdm18,delta_clip_ii_vs_vqdm18
-4.15,all_midblock,H16,512x512x128x128,4.00,0.786271,0.124747,0.911018,0.8253,0.1005,0.9258,-0.039029,0.024247,-0.014782
-3.15,all_midblock,H16,1024x128x128,3.00,0.696052,0.178496,0.874548,0.7210,0.1642,0.8852,-0.024948,0.014296,-0.010652
-2.15,all_midblock,noH,64x1024,2.00,0.564430,0.254336,0.818766,0.5865,0.2440,0.8305,-0.022070,0.010336,-0.011734
