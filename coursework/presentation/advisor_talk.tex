@@ -1,0 +1,838 @@
+% Компиляция: XeLaTeX, два запуска.
+% 11 слайдов, включая подробные таблицы результатов.
+% Источники чисел: финальные таблицы из run_summaries.
+% Комментарии перед слайдами — ориентиры для устного доклада.
+
+\documentclass[aspectratio=169,10pt]{beamer}
+
+\usepackage{fontspec}
+\usepackage[russian]{babel}
+\setsansfont{Arial}
+\setmainfont{Arial}
+\setmonofont{Consolas}[Scale=0.85]
+\usefonttheme{professionalfonts}
+
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs,tabularx,array,colortbl}
+
+% -------------------- Оформление --------------------
+
+\definecolor{Ink}{HTML}{17263C}
+\definecolor{Accent}{HTML}{176B75}
+\definecolor{Muted}{HTML}{566271}
+\definecolor{Tint}{HTML}{EDF4F5}
+
+\setbeamercolor{normal text}{fg=Ink,bg=white}
+\setbeamercolor{structure}{fg=Accent}
+\setbeamercolor{frametitle}{fg=Ink,bg=white}
+\setbeamercolor{block title}{fg=Accent,bg=white}
+\setbeamercolor{block body}{fg=Ink,bg=white}
+\setbeamercolor{takeaway}{fg=Ink,bg=Tint}
+\setbeamercolor{footline}{fg=Muted,bg=white}
+
+\setbeamerfont{frametitle}{
+  size=\large,
+  series=\bfseries
+}
+\setbeamerfont{block title}{
+  size=\normalsize,
+  series=\bfseries
+}
+\setbeamerfont{footline}{size=\scriptsize}
+
+\setbeamersize{
+  text margin left=7mm,
+  text margin right=7mm
+}
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{itemize item}{\small\textbullet}
+
+\setbeamertemplate{footline}{%
+  \leavevmode
+  \begin{beamercolorbox}[
+    wd=\paperwidth,
+    ht=2.8ex,
+    dp=1.4ex,
+    leftskip=7mm,
+    rightskip=7mm
+  ]{footline}
+    Квантизация SD 1.5
+    \hfill \insertframenumber/\inserttotalframenumber
+  \end{beamercolorbox}%
+}
+
+\newcommand{\keypoint}[1]{%
+  \begin{beamercolorbox}[
+    sep=1.8mm,
+    wd=\linewidth
+  ]{takeaway}
+    \small\bfseries #1
+  \end{beamercolorbox}%
+}
+
+\newcommand{\muted}[1]{{\color{Muted}#1}}
+\newcommand{\midblock}{\texttt{mid\_block}}
+\newcommand{\rvq}{\textbf{RVQ-AW}}
+\newcommand{\score}{\operatorname{Score}}
+\newcolumntype{Y}{>{\raggedright\arraybackslash}X}
+
+\title{Квантизация диффузионных моделей машинного обучения}
+\subtitle{Activation-aware RVQ для Stable Diffusion 1.5}
+\author{Подъяблонский Егор Петрович}
+\institute{ВМК МГУ}
+\date{2026}
+
+\begin{document}
+
+% ===================================================
+% 1. ~20 секунд.
+% Представить тему и исследовательский вопрос.
+% ===================================================
+
+\begin{frame}[plain]
+  \vspace{3mm}
+
+  {\color{Accent}\small
+    КУРСОВАЯ РАБОТА
+    \quad / \quad
+    ПРОМЕЖУТОЧНЫЕ РЕЗУЛЬТАТЫ
+    \par
+  }
+
+  \vspace{7mm}
+
+  {\LARGE\bfseries
+    Квантизация диффузионных\par
+    моделей машинного обучения\par
+  }
+
+  \vspace{4mm}
+
+  {\large
+    Activation-aware RVQ для Stable Diffusion 1.5
+    \par
+  }
+
+  \vfill
+
+  {\normalsize
+    Подъяблонский Егор Петрович\par
+  }
+
+  \vspace{2mm}
+
+  {\small\color{Muted}
+    ВМК МГУ \quad | \quad 2026\par
+  }
+
+  \vspace{3mm}
+\end{frame}
+
+% ===================================================
+% 2. ~50 секунд.
+% Разделить общую задачу сжатия и текущий масштаб проверки.
+% ===================================================
+
+\begin{frame}[t]{Задача и границы исследования}
+  Диффузионные модели требуют значительных ресурсов.
+  В работе исследуется
+  \textbf{post-training quantization (PTQ)} весов.
+
+  \vspace{1mm}
+
+  \begin{columns}[T,onlytextwidth]
+
+    \begin{column}{0.47\textwidth}
+      \begin{block}{Исследовательская цель}
+        Сохранить большую часть качества сильного векторного
+        бейзлайна \textbf{VQDM}, но уменьшить время построения
+        квантизованного представления.
+      \end{block}
+
+      \small
+      Узкое место VQDM --- совместный поиск комбинаций
+      кодовых слов с помощью \textbf{beam search}.
+    \end{column}
+
+    \begin{column}{0.49\textwidth}
+      \begin{block}{Что квантуется сейчас}
+        \begin{itemize}
+          \setlength{\itemsep}{2mm}
+
+          \item U-Net модели
+            \textbf{Stable Diffusion 1.5}.
+
+          \item \midblock:
+            \textbf{18 Linear/Conv2d-слоёв};
+            также проверяется набор из 16 слоёв
+            без двух \texttt{time\_emb\_proj}.
+
+          \item \textbf{Только веса, без fine-tuning.}
+        \end{itemize}
+      \end{block}
+    \end{column}
+
+  \end{columns}
+
+  \vfill
+
+  \keypoint{
+    Представленные далее результаты --- для 18 слоёв
+    \midblock, а не для полного U-Net.
+  }
+\end{frame}
+
+% ===================================================
+% 3. ~45 секунд.
+% Не пересказывать статьи: объяснить роль групп методов.
+% ===================================================
+
+\begin{frame}[t]{С чем сравнивается предлагаемый метод}
+  \begin{columns}[T,onlytextwidth]
+
+    \begin{column}{0.49\textwidth}
+      \begin{block}{Скалярная квантизация}
+        \small
+
+        \textbf{Scalar PTQ} --- равномерная сетка
+        и независимое округление весов.
+        \par\medskip
+
+        \textbf{Q-Diffusion-like} --- калибровка сетки
+        по ошибке восстановления выхода блока.
+        \par\medskip
+
+        \textbf{PTQ4DM-like} --- timestep-aware калибровка
+        и reconstruction objective.
+        \par\medskip
+
+        \textbf{BitsFusion-lite} --- разная битность слоёв
+        при заданном среднем бюджете.
+      \end{block}
+    \end{column}
+
+    \begin{column}{0.47\textwidth}
+      \begin{block}{Векторная квантизация}
+        \small
+
+        \textbf{Vanilla VQ} --- один кодбук;
+        быстрый базовый вариант.
+        \par\medskip
+
+        \textbf{AQUATIC-Diff-like} --- аддитивное
+        представление несколькими кодбуками
+        и калибровка по активациям.
+        \par\medskip
+
+        \textbf{VQDM} --- несколько кодбуков,
+        activation-aware функционал
+        и совместный beam search.
+      \end{block}
+    \end{column}
+
+  \end{columns}
+
+  \vfill
+
+  \keypoint{
+    Like/lite --- адаптации к единому no-fine-tuning протоколу,
+    а не полные репродукции исходных методов.
+  }
+\end{frame}
+
+% ===================================================
+% 4. ~60 секунд.
+% Главное различие — поиск индексов,
+% а не форма представления.
+% ===================================================
+
+\begin{frame}[t]{От совместного поиска к остаточной квантизации}
+  Общее представление вектора
+  $w\in\mathbb{R}^{d}$ --- сумма кодовых слов:
+
+  \[
+    \widehat w = \sum_{m=1}^{M} C_m[z_m].
+  \]
+
+  \small
+  $C_m$ --- кодбук стадии $m$;
+  $z_m$ --- индекс выбранного вектора.
+  \normalsize
+
+  \begin{columns}[T,onlytextwidth]
+
+    \begin{column}{0.47\textwidth}
+      \begin{block}{VQDM: совместный выбор}
+        Комбинация $(z_1,\ldots,z_M)$ выбирается
+        через \textbf{beam search}.
+        \par\smallskip
+
+        Точный, но дорогой поиск при росте
+        числа кодбуков и слоёв.
+      \end{block}
+    \end{column}
+
+    \begin{column}{0.49\textwidth}
+      \begin{block}{RVQ-AW: последовательный выбор}
+        Каждая стадия квантует \textbf{остаток}:
+
+        \[
+          r_0=w,
+          \qquad
+          r_m=r_{m-1}-C_m[z_m].
+        \]
+      \end{block}
+    \end{column}
+
+  \end{columns}
+
+  \vfill
+
+  \keypoint{
+    Компромисс: потенциальная потеря точности
+    из-за жадного выбора в обмен на более дешёвое построение.
+  }
+\end{frame}
+
+% ===================================================
+% 5. ~70 секунд.
+% Объяснить, почему одинаковые ошибки весов не равноценны.
+% ===================================================
+
+\begin{frame}[t]{Как RVQ учитывает активации}
+  $X$ --- матрица калибровочных входов слоя;
+  $\Delta W=W-\widehat W$;
+  $G=X^{\top}X$.
+
+  \[
+    \mathcal{L}(\widehat W)
+    =
+    \left\|X\Delta W^{\top}\right\|_F^2
+    =
+    \operatorname{tr}\!
+    \left(
+      \Delta W\,G\,\Delta W^{\top}
+    \right).
+  \]
+
+  \keypoint{
+    Минимизируется ошибка выхода слоя,
+    а не только расстояние между исходными
+    и квантизованными весами.
+  }
+
+  \vspace{1mm}
+
+  \begin{columns}[T,onlytextwidth]
+
+    \begin{column}{0.29\textwidth}
+      \begin{block}{Разные размеры $K_m$}
+        \small
+        Ёмкость кодбуков
+        перераспределяется между стадиями
+        при близком общем битовом бюджете.
+        \[
+          b_{\mathrm{index}}
+          =\frac{1}{d}\sum_m\log_2 K_m.
+        \]
+      \end{block}
+    \end{column}
+
+    \begin{column}{0.37\textwidth}
+      \begin{block}{Full-$G$ recoding}
+        \small
+        После построения кодбуки фиксируются.
+        Coordinate descent уточняет \textbf{индексы}
+        по полной $G$, учитывая взаимодействия
+        между короткими блоками.
+      \end{block}
+    \end{column}
+
+    \begin{column}{0.29\textwidth}
+      \begin{block}{Hadamard}
+        \small
+        Ортогональное перемешивание
+        координат перед RVQ.
+        Применяется не безусловно:
+        эффект зависит от конфигурации.
+      \end{block}
+    \end{column}
+
+  \end{columns}
+
+  \vfill
+
+  {\small\color{Muted}
+    Recoding не является fine-tuning:
+    на этом шаге меняются только дискретные индексы.
+  }
+\end{frame}
+
+% ===================================================
+% 6. ~50 секунд.
+% Сходство с исходной моделью и соответствие тексту
+% — разные критерии.
+% ===================================================
+
+\begin{frame}[t]{Экспериментальный протокол и метрики}
+  \vspace{-2mm}
+
+  \begin{columns}[T,onlytextwidth]
+
+    \begin{column}{0.48\textwidth}
+      \begin{block}{Одинаковые условия}
+        \small
+
+        \textbf{96 изображений на вариант};
+        одинаковые prompts, seed и сэмплирование.
+        \par\smallskip
+
+        Калибровка: фиксированные запросы
+        и шаги диффузии.
+        \par\smallskip
+
+        Скалярные методы:
+        \textbf{2, 3, 4 бита}.
+        Векторные целевые профили:
+        \textbf{2.15, 3.15, 4.15 bpp}.
+        \par\smallskip
+
+        \textbf{bpp} учитывает индексы и кодбуки
+        в расчёте на квантуемый вес.
+        \par\smallskip
+
+        $T_q$ --- время квантизации с калибровкой,
+        \textbf{не время инференса}.
+      \end{block}
+    \end{column}
+
+    \begin{column}{0.48\textwidth}
+      \begin{block}{Как оценивается результат}
+        \small
+
+        \textbf{CLIP I-I $\uparrow$} ---
+        семантическое сходство
+        с результатом исходной модели.
+        \par\smallskip
+
+        \textbf{LPIPS $\downarrow$} ---
+        перцептивное расстояние
+        до того же результата.
+        \par\smallskip
+
+        \textbf{CLIP T-I $\uparrow$} ---
+        соответствие изображения тексту.
+        \par\smallskip
+
+        \textbf{PSNR, SSIM $\uparrow$} ---
+        пиксельное и структурное сходство.
+      \end{block}
+
+      \[
+        \score
+        =
+        \text{CLIP I-I}
+        -
+        \mathrm{LPIPS}.
+      \]
+    \end{column}
+
+  \end{columns}
+
+  \vfill
+
+  \keypoint{
+    Score используется для компактного ранжирования;
+    выводы проверяются по совокупности метрик.
+  }
+\end{frame}
+
+% ===================================================
+% 7. ~75 секунд.
+% Сначала качество, затем время.
+% Быстрые VQ-бейзлайны не скрывать.
+%
+% Score скопирован из отчёта;
+% не пересчитывается по округлённым CLIP/LPIPS.
+%
+% Отношения Tq(VQDM)/Tq(RVQ-AW): 3.07, 2.87, 2.37.
+% Это wall-clock разных запусков, а не контролируемый hardware benchmark.
+% ===================================================
+
+\begin{frame}[t]{Результат: RVQ-AW ближе всех к VQDM}
+  {\small
+    18 слоёв \midblock;
+    три лучших метода по Score для каждого профиля.
+  }
+
+  \vspace{1mm}
+
+  \begin{center}
+    \small
+    \renewcommand{\arraystretch}{1.03}
+    \setlength{\tabcolsep}{5mm}
+
+    \begin{tabular}{clrrr}
+      \toprule
+
+      \textbf{Профиль}
+        & \textbf{Метод}
+        & \textbf{bpp}
+        & \textbf{Score $\uparrow$}
+        & $\boldsymbol{T_q}$\textbf{, с $\downarrow$} \\
+
+      \midrule
+
+      $\approx 2$
+        & VQDM
+        & 2.02
+        & \textbf{0.586}
+        & 1857.1 \\
+
+      \rowcolor{Tint}
+        & \rvq
+        & 2.03
+        & 0.564
+        & 604.2 \\
+
+        & BitsFusion-lite
+        & 2.05
+        & 0.468
+        & 88.4 \\
+
+      \midrule
+
+      $\approx 3$
+        & VQDM
+        & 3.02
+        & \textbf{0.721}
+        & 2846.8 \\
+
+      \rowcolor{Tint}
+        & \rvq
+        & 3.02
+        & 0.704
+        & 992.8 \\
+
+        & Vanilla VQ
+        & 3.01
+        & 0.617
+        & 1.91 \\
+
+      \midrule
+
+      $\approx 4$
+        & VQDM
+        & 4.03
+        & \textbf{0.825}
+        & 3314.0 \\
+
+      \rowcolor{Tint}
+        & \rvq
+        & 4.03
+        & 0.786
+        & 1400.0 \\
+
+        & Vanilla VQ
+        & 4.00
+        & 0.737
+        & 1.57 \\
+
+      \bottomrule
+    \end{tabular}
+  \end{center}
+
+  \vfill
+
+  \keypoint{
+    RVQ-AW --- второе место по Score во всех трёх профилях.
+    \newline
+    Разрыв с VQDM --- $0.017$--$0.039$ Score.
+    Зафиксированный wall-clock ниже в $2.4$--$3.1$ раза,
+    но аппаратные конфигурации запусков различались.
+  }
+\end{frame}
+
+% ===================================================
+% 8. ~60 секунд.
+% Показать, что проверялись и отрицательные гипотезы.
+% ===================================================
+
+\begin{frame}[t]{Что показали промежуточные проверки}
+  \footnotesize
+  \renewcommand{\arraystretch}{1.12}
+
+  \begin{tabularx}{\textwidth}{@{}p{2.45cm}p{2.75cm}Y@{}}
+    \toprule
+
+    \textbf{Проверка}
+      & \textbf{Постановка}
+      & \textbf{Наблюдение} \\
+
+    \midrule
+
+    \textbf{Разные $K_m$}
+      & 10 Linear, noH, $d=8$
+      & При почти равном bpp Score вырос
+        $0.5682\!\to\!0.6100$ для профиля 2.15
+        и $0.7076\!\to\!0.7236$ для 3.15. \\
+
+    \addlinespace[1.1mm]
+
+    \textbf{Full-$G$ recoding}
+      & Быстрый совмещённый sweep
+      & Внутренний функционал уменьшился в среднем
+        на \textbf{47.53\%}.
+        Внешние метрики менялись неоднозначно;
+        нужен изолированный повтор. \\
+
+    \addlinespace[1.1mm]
+
+    \textbf{Hadamard}
+      & 10 Linear, $K=256$, без recoding
+      & H16 дал $+0.014$ Score при 3.15 bpp;
+        при 2.15 и 4.15 лучшим был noH. \\
+
+    \addlinespace[1.1mm]
+
+    \textbf{Размерность $d$}
+      & Старый совмещённый pipeline
+      & При $K=256$ вариант $d=16$ проиграл $d=8$
+        по качеству и потребовал почти вдвое
+        больше времени. \\
+
+    \addlinespace[1.1mm]
+
+    \textbf{Local recode}
+      & 10 Linear, совмещённый перебор
+      & Уточнение между стадиями выиграло
+        лишь \textbf{2 из 20} парных сравнений;
+        среднее $\Delta\score=-0.0408$. \\
+
+    \bottomrule
+  \end{tabularx}
+
+  \vfill
+
+  \keypoint{
+    Главный положительный сигнал --- разные $K_m$ по стадиям.
+    Текущий кандидат: $d=8$, stage-wise $K_m$, local recode отключён;
+    Hadamard и full-$G$ recoding требуют факторной перепроверки.
+  }
+\end{frame}
+
+% ===================================================
+% 9. ~50 секунд.
+% Закончить результатом и повесткой дальнейшей работы.
+% ===================================================
+
+\begin{frame}[t]{Текущий вклад и следующий этап}
+  \keypoint{
+    Последовательная RVQ сохраняет большую часть
+    преимущества VQDM по Score
+    без совместного beam-search поиска.
+  }
+
+  \vspace{2mm}
+
+  \begin{columns}[T,onlytextwidth]
+
+    \begin{column}{0.47\textwidth}
+      \begin{block}{Что сделано}
+        \small
+
+        Единый \textbf{no-fine-tuning протокол}
+        для скалярных и векторных методов.
+        \par\medskip
+
+        Кандидат \textbf{RVQ-AW}:
+        activation-aware остаточная квантизация,
+        распределение ёмкости стадий и recoding.
+        \par\medskip
+
+        Сравнение при трёх битовых бюджетах
+        и проверки отдельных гипотез.
+      \end{block}
+    \end{column}
+
+    \begin{column}{0.49\textwidth}
+      \begin{block}{Что проверить дальше}
+        \small
+
+        Контролируемый совместный перебор
+        \textbf{$K$, $d$, Hadamard и recoding}.
+        \par\medskip
+
+        Развитие timestep-aware калибровки
+        и переход от \midblock{}
+        к \textbf{полному U-Net}.
+        \par\medskip
+
+        FID/clean-FID на большем числе изображений,
+        preference-метрика, память и latency.
+        Fine-tuning и distillation ---
+        отдельная линия экспериментов.
+      \end{block}
+    \end{column}
+
+  \end{columns}
+
+  \vfill
+
+  {\small\color{Muted}
+    Область текущих выводов:
+    \midblock{} и 96 изображений на вариант.
+    $T_q$ не нормирован по GPU; ускорение инференса из него не следует.
+  }
+\end{frame}
+
+% ===================================================
+% Подробные метрики по каждому профилю.
+% Числа перенесены из сводки.
+% ===================================================
+
+\begin{frame}[t]{Метрики по каждому профилю}
+  \begin{center}
+    \small
+    \renewcommand{\arraystretch}{1.15}
+    \setlength{\tabcolsep}{2.5mm}
+
+    \begin{tabular}{clrrrrr}
+      \toprule
+
+      \textbf{Профиль}
+        & \textbf{Метод}
+        & \textbf{bpp}
+        & \textbf{CLIP I-I}
+        & \textbf{CLIP T-I}
+        & \textbf{LPIPS}
+        & \textbf{Score} \\
+
+      \midrule
+
+      $\approx 2$
+        & VQDM
+        & 2.02 & 0.831 & 0.305 & 0.244 & 0.586 \\
+
+      \rowcolor{Tint}
+        & \rvq
+        & 2.03 & 0.819 & 0.305 & 0.254 & 0.564 \\
+
+        & BitsFusion-lite
+        & 2.05 & 0.768 & 0.312 & 0.300 & 0.468 \\
+
+      \midrule
+
+      $\approx 3$
+        & VQDM
+        & 3.02 & 0.885 & 0.308 & 0.164 & 0.721 \\
+
+      \rowcolor{Tint}
+        & \rvq
+        & 3.02 & 0.879 & 0.308 & 0.175 & 0.704 \\
+
+        & Vanilla VQ
+        & 3.01 & 0.828 & 0.319 & 0.212 & 0.617 \\
+
+      \midrule
+
+      $\approx 4$
+        & VQDM
+        & 4.03 & 0.926 & 0.310 & 0.101 & 0.825 \\
+
+      \rowcolor{Tint}
+        & \rvq
+        & 4.03 & 0.911 & 0.311 & 0.125 & 0.786 \\
+
+        & Vanilla VQ
+        & 4.00 & 0.881 & 0.317 & 0.144 & 0.737 \\
+
+      \bottomrule
+    \end{tabular}
+  \end{center}
+
+  \vfill
+
+  \keypoint{
+    Лидерство по Score не означает лидерства по CLIP T-I:
+    сходство с исходной моделью и соответствие тексту ---
+    разные критерии.
+  }
+\end{frame}
+
+% ===================================================
+% Битовый бюджет и итоговые профили.
+%
+% Не смешивать отдельную Hadamard-абляцию
+% с итоговыми профилями:
+% в источнике они дают разные варианты.
+% Причина расхождения не уточнена.
+% ===================================================
+
+\begin{frame}[t]{Битовый бюджет и итоговые профили RVQ-AW}
+  Стоимость индексов для вектора из $d$ весов:
+
+  \[
+    b_{\mathrm{index}}
+    =
+    \frac{1}{d}
+    \sum_{m=1}^{M}\log_2 K_m.
+  \]
+
+  {\small
+    Фактический bpp дополнительно
+    учитывает хранение кодбуков.
+  }
+
+  \vspace{2mm}
+
+  \begin{center}
+    \small
+    \renewcommand{\arraystretch}{1.3}
+    \setlength{\tabcolsep}{3mm}
+
+    \begin{tabular}{cclcr}
+      \toprule
+
+      \textbf{Целевой bpp}
+        & \textbf{Hadamard}
+        & \boldmath$(K_1,\ldots,K_M)$
+        & \boldmath$d$
+        & \textbf{Факт. bpp} \\
+
+      \midrule
+
+      2.15
+        & noH
+        & $[64,1024]$
+        & 8
+        & 2.03 \\
+
+      3.15
+        & H32
+        & $[128,256,512]$
+        & 8
+        & 3.02 \\
+
+      4.15
+        & H16
+        & $[512,512,128,128]$
+        & 8
+        & 4.03 \\
+
+      \bottomrule
+    \end{tabular}
+  \end{center}
+
+  \vspace{2mm}
+
+  {\small\color{Muted}
+    Чистый тест Hadamard и итоговый выбор проводились
+    в разных постановках: fixed $K$ без recoding на 10 Linear
+    против stage-wise $K$ с recoding на 18 слоях.
+    Поэтому различие оптимальных блоков не является противоречием,
+    но взаимодействия нужно проверить в едином факторном эксперименте.
+  }
+\end{frame}
+
+\end{document}

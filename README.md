@@ -2,11 +2,11 @@
 
 This repository contains coursework materials, code and compact experiment summaries for a study of **post-training quantization of Stable Diffusion 1.5**.
 
-Full coursework PDF: [coursework/main.pdf](coursework/main.pdf)
+Full coursework PDF: [coursework/coursework_paper/main.pdf](coursework/coursework_paper/main.pdf)
 
-LaTeX source: [coursework/main.tex](coursework/main.tex)
+LaTeX source: [coursework/coursework_paper/main.tex](coursework/coursework_paper/main.tex)
 
-Experiment summary index: [run_summaries/README.md](run_summaries/README.md)
+Experiment summary index: [coursework/run_summaries/README.md](coursework/run_summaries/README.md)
 
 ---
 
@@ -15,13 +15,17 @@ Experiment summary index: [run_summaries/README.md](run_summaries/README.md)
 ```text
 cursovaya/
 |
-|-- coursework/        LaTeX source, logo and final coursework PDF
-|-- rvq/               main RVQ implementation and Hadamard sweep
-|-- vqdm/              VQDM baseline adapted to Stable Diffusion 1.5
-|-- baselines/         scalar and vector baseline implementations
-|-- quant/             larger RVQ ablation / JobB experiment
-|-- run_summaries/     compact processed result tables
-|-- requirements.txt   shared Python dependencies
+|-- coursework/
+|   |-- coursework_paper/  LaTeX source, logo and final coursework PDF
+|   |-- presentation/      research presentation sources and PDFs
+|   |-- rvq/               main RVQ implementation and Hadamard sweep
+|   |-- vqdm/              VQDM baseline adapted to Stable Diffusion 1.5
+|   |-- baselines/         scalar and vector baseline implementations
+|   |-- quant/             larger RVQ ablation experiment
+|   |-- run_summaries/     compact processed result tables
+|   |-- diffusion_quantization_research_map.md
+|   `-- requirements.txt   shared Python dependencies
+`-- diploma/               reserved for subsequent diploma work
 ```
 
 ---
@@ -36,7 +40,7 @@ The experiments focus on quantizing the U-Net middle block of Stable Diffusion 1
 
 ## Implemented Methods
 
-Scalar baselines in [baselines/](baselines/):
+Scalar baselines in [coursework/baselines/](coursework/baselines/):
 
 * Scalar PTQ;
 * Q-Diffusion-lite;
@@ -61,14 +65,14 @@ Proposed method:
 
 ## Results
 
-Processed results are stored in [run_summaries/](run_summaries/). The most important folders are:
+Processed results are stored in [coursework/run_summaries/](coursework/run_summaries/). The most important folders are:
 
-* [baselines_20260523_full_midblock](run_summaries/baselines_20260523_full_midblock): full-midblock scalar baselines;
-* [baselines_20260524_cluster_completed](run_summaries/baselines_20260524_cluster_completed): completed 18-layer baseline runs;
-* [baselines_20260525_completed](run_summaries/baselines_20260525_completed): completed 16-layer vector baselines;
-* [rvq_final_20260531](run_summaries/rvq_final_20260531): final RVQ sweep;
-* [rvq_hadamard_clean_20260602](run_summaries/rvq_hadamard_clean_20260602): isolated Hadamard-block experiment;
-* [rvq_jobb_ablation_20260513_14](run_summaries/rvq_jobb_ablation_20260513_14): earlier RVQ ablations.
+* [baselines_20260523_full_midblock](coursework/run_summaries/baselines_20260523_full_midblock): full-midblock scalar baselines;
+* [baselines_20260524_cluster_completed](coursework/run_summaries/baselines_20260524_cluster_completed): completed 18-layer baseline runs;
+* [baselines_20260525_completed](coursework/run_summaries/baselines_20260525_completed): completed 16-layer vector baselines;
+* [rvq_final_20260531](coursework/run_summaries/rvq_final_20260531): final RVQ sweep;
+* [rvq_hadamard_clean_20260602](coursework/run_summaries/rvq_hadamard_clean_20260602): isolated Hadamard-block experiment;
+* [rvq_jobb_ablation_20260513_14](coursework/run_summaries/rvq_jobb_ablation_20260513_14): earlier RVQ ablations.
 
 The main quality metrics are CLIP image-image similarity, LPIPS, CLIP text-image similarity, PSNR, SSIM and quantization time. Several summaries also report the combined score:
 
