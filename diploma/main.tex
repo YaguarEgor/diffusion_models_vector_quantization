@@ -1,0 +1,145 @@
+\documentclass{article}
+
+\PassOptionsToPackage{numbers, sort, compress}{natbib}
+\usepackage[main,final]{neurips_2025}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{hyperref}
+\usepackage{url}
+\usepackage{booktabs}
+\usepackage{nicefrac}
+\usepackage{microtype}
+\usepackage{xcolor}
+
+%%%
+
+\usepackage{subcaption}
+\usepackage{graphicx}
+\usepackage{multirow}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{amsthm}
+\usepackage{mathrsfs}
+\usepackage{xcolor}
+\usepackage{textcomp}
+\usepackage{manyfoot}
+\usepackage{algorithm}
+\usepackage{algorithmicx}
+\usepackage{algpseudocode}
+\usepackage{listings}
+
+\newtheorem{theorem}{Theorem} % continuous numbers
+%%\newtheorem{theorem}{Theorem}[section] % sectionwise numbers
+%% optional argument [theorem] produces theorem numbering sequence instead of independent numbers for Proposition
+\newtheorem{proposition}[theorem]{Proposition}%
+\newtheorem{lemma}{Lemma}%
+%%\newtheorem{proposition}{Proposition} % to get separate numbers for theorem and proposition etc.
+
+\newtheorem{example}{Example}
+\newtheorem{remark}{Remark}
+
+\newtheorem{definition}{Definition}
+\newtheorem{assumption}{Assumption}
+
+%%%
+
+
+\title{Quantization of Diffusion Models}
+
+
+% The \author macro works with any number of authors. There are two commands
+% used to separate the names and addresses of multiple authors: \And and \AND.
+%
+% Using \And between authors leaves it to LaTeX to determine where to break the
+% lines. Using \AND forces a line break at that point. So, if LaTeX puts 3 of 4
+% authors names on the first line, and the last on the second line, try using
+% \AND instead of \And before the third author name.
+
+
+\author{
+  Egor Podyablonskiy\\
+  Lomonosov Moscow State University\\
+  Faculty of Computational Mathematics and Cybernetics\\
+  Moscow, Russia\\
+  \And
+  Aibek Alanov\\
+  Scientific advisor\\
+  Candidate of Physical and Mathematical Sciences\\
+  Lomonosov Moscow State University\\
+  Moscow, Russia\\
+}
+
+
+\begin{document}
+
+
+\maketitle
+
+\begin{abstract}
+    Diffusion models provide high-quality image generation but require substantial memory and computational resources. This project studies post-training weight quantization of Stable Diffusion 1.5, with a focus on activation-aware vector quantization. We investigate residual vector quantization as a computationally simpler alternative to additive vector quantization with joint beam-search code assignment. The considered improvements include stage-wise allocation of codebook sizes, orthogonal Hadamard transforms, and post-quantization refinement of discrete codes. Preliminary experiments on the middle block of the U-Net show that the resulting method approaches the quality of the strong VQDM baseline while avoiding joint beam-search assignment and requiring no fine-tuning of the diffusion model. Further work will extend the evaluation to the full U-Net, isolate the contribution of each component, and use larger-scale generation-quality metrics.
+\end{abstract}
+
+\textbf{Keywords:} TODO
+
+\section{Introduction}\label{sec:intro}
+
+TODO
+
+\textbf{Contributions.} Our contributions can be summarized as follows:
+\begin{itemize}
+    \item We present...
+    \item We demonstrate the validity of our theoretical results through empirical studies...
+    \item We highlight the implications of our findings for...
+\end{itemize}
+
+\textbf{Outline.} The rest of the paper is organized as follows...
+
+\section{Related Work}\label{sec:rw}
+
+\textbf{Topic \#1.}
+TODO
+
+\textbf{Topic \#2.}
+TODO
+
+\section{Preliminaries}\label{sec:prelim}
+
+\subsection{General notation}
+
+In this section, we introduce the general notation used in the rest of the paper and the basic assumptions.
+
+\subsection{Assumptions}
+
+TODO
+
+\section{Method}\label{sec:method}
+
+\section{Experiments}\label{sec:exp}
+
+To verify the theoretical estimates obtained, we conducted a detailed empirical study...
+
+\section{Discussion}\label{sec:disc}
+
+TODO
+
+\section{Conclusion}\label{sec:concl}
+
+TODO
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\bibliographystyle{unsrtnat}
+\bibliography{references}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\newpage
+\appendix
+\section{Appendix / supplemental material}\label{app}
+
+\subsection{Additional experiments / Proofs of Theorems}\label{app:exp}
+
+TODO
+
+\end{document}
