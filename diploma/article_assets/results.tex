@@ -1,0 +1,46 @@
+\newcommand{\VQBits}{4.150}
+\newcommand{\OriginalFID}{6.192}
+\newcommand{\VQFID}{15.726}
+\newcommand{\FIDGap}{9.534}
+\newcommand{\VQSeconds}{5369.657}
+\newcommand{\CalibrationSeconds}{1727.686}
+\newcommand{\MiddleGainThousand}{37.03}
+\newcommand{\MiddleLargeCILow}{34.49}
+\newcommand{\MiddleLargeCIHigh}{39.53}
+\newcommand{\AdaLNGainThousand}{30.80}
+\newcommand{\FamilyBaseline}{0.125554}
+\newcommand{\MiddleGainSmall}{36.49}
+\newcommand{\MiddleCILow}{31.11}
+\newcommand{\MiddleCIHigh}{41.91}
+\newcommand{\LateGainSmall}{1.09}
+\newcommand{\GateMLPGain}{10.41}
+\newcommand{\GateMLPCILow}{7.01}
+\newcommand{\GateMLPCIHigh}{13.73}
+\newcommand{\ShiftMLPGain}{6.56}
+\newcommand{\ShiftMLPCILow}{2.62}
+\newcommand{\ShiftMLPCIHigh}{10.18}
+\newcommand{\BaselineRows}{%
+Original & 32.000 & 6.192 & 21.971 & 250.782 & 0.7848 & 0.6554 \\
+VQDM transfer & 4.150 & 15.726 & 27.929 & 144.793 & 0.6372 & 0.7142 \\
+}
+\newcommand{\LiteratureRows}{%
+VQ4DiT~\citep{deng2024vq4dit} & W3 & 6.72 & 11.91 & +5.19 & 24.18 \\
+PTQ4DiT~\citep{wu2024ptq4dit} & W4A8 & 6.02 & 9.17 & +3.15 & 24.29 \\
+HTG~\citep{ding2025htg} & W4A8 & 6.02 & 8.77 & +2.75 & 22.31 \\
+}
+\newcommand{\FamilyRows}{%
+adaLN & 223.0 & 33.33\% & 0.086888 & 30.80\% \\
+Attention & 148.6 & 22.22\% & 0.110884 & 11.68\% \\
+MLP & 297.3 & 44.44\% & 0.104628 & 16.67\% \\
+}
+\newcommand{\WeightedRows}{%
+Before refitting & 4.1501 & 15.726 & 27.929 & 144.799 & 0 \\
+Uniform & 4.1501 & 15.604 & 27.858 & 145.739 & 200 \\
+Last ten steps weighted $2\times$ & 4.1501 & 15.667 & 27.899 & 145.114 & 200 \\
+Last twenty steps weighted $2\times$ & 4.1501 & 15.686 & 27.927 & 145.288 & 200 \\
+}
+\newcommand{\TemporalRows}{%
+Before refitting & 4.1501 & 15.726 & 27.929 & 144.794 & 0 \\
+Three temporal codebook sets & 4.2044 & 15.663 & 27.823 & 146.031 & 600 \\
+One uniform codebook set & 4.1501 & 15.536 & 27.796 & 146.436 & 600 \\
+}
