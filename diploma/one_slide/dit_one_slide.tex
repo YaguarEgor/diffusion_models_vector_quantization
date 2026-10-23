@@ -1,0 +1,116 @@
+% Build with XeLaTeX; this file is self-contained.
+\documentclass[aspectratio=169,10pt]{beamer}
+\usepackage{fontspec}
+\usepackage[russian]{babel}
+\setsansfont{Arial}
+\setmainfont{Arial}
+\usefonttheme{professionalfonts}
+\usepackage{amsmath,pgfplots,pgfplotstable}
+\pgfplotsset{compat=1.18}
+
+\definecolor{Ink}{HTML}{222222}
+\definecolor{Accent}{HTML}{176B75}
+\definecolor{Muted}{HTML}{A9B2B8}
+\definecolor{Subtle}{HTML}{555555}
+\setbeamercolor{normal text}{fg=Ink,bg=white}
+\setbeamercolor{frametitle}{fg=Ink,bg=white}
+\setbeamercolor{structure}{fg=Accent}
+\setbeamerfont{frametitle}{size=\fontsize{17}{20},series=\bfseries}
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{footline}{}
+\setbeamertemplate{frametitle}{\vspace{2.5mm}\insertframetitle\par\vspace{.8mm}}
+\setbeamersize{text margin left=7mm,text margin right=7mm}
+\setlength{\parskip}{1mm}
+\hypersetup{
+  pdftitle={Перенос VQDM на DiT: важны средние шаги},
+  pdfauthor={Егор Подъяблонский},
+  pdfsubject={Однослайдовый доклад о переносе векторной квантизации на DiT},
+  pdfcreator={XeLaTeX},
+  hidelinks
+}
+
+% Source: ../article_assets/results.json, temporal_windows_256.
+% All bounds are paired-bootstrap 95% intervals; the first crosses zero.
+\pgfplotstableread{
+position gain low high
+0 2.368293 -0.648391 4.993902
+1 20.627143 16.706798 24.487416
+2 36.488425 31.108123 41.911975
+3 12.799602 9.918571 15.986773
+4 1.089730 0.509793 1.694293
+}\windowdata
+
+\begin{document}
+\begin{frame}[plain]
+  \begin{tikzpicture}[remember picture,overlay]
+    \begin{scope}[shift={(current page.north west)},
+      every node/.style={anchor=north west,inner sep=0pt,outer sep=0pt,align=left}]
+      \node[text width=146mm,font=\fontsize{17}{20}\selectfont\bfseries]
+        at (7mm,-5mm) {Перенос VQDM на DiT: важны средние шаги};
+      \node[text width=146mm,text=Subtle,font=\fontsize{9.5}{11.5}\selectfont]
+        at (7mm,-15mm) {DiT-XL/2\quad ImageNet $256\times256$\quad 50 шагов DDPM\quad CFG 1,5};
+      \node[text width=146mm,font=\fontsize{10.5}{12.5}\selectfont]
+        at (7mm,-21mm) {\textbf{VQDM:} $32\to4{,}15$ бит/параметр\hfill
+          \textbf{FID$\downarrow$:} $6{,}19\to15{,}73$\ \textcolor{Subtle}{(10\,000 изображений)}};
+      \node[text width=96mm,font=\fontsize{10.5}{12.5}\selectfont\bfseries]
+        at (7mm,-29mm) {Возврат исходной модели на 10 шагов};
+      \node at (7mm,-35mm) {\begin{tikzpicture}[every node/.style={}]
+        \begin{axis}[
+          width=94mm,height=37mm,
+          axis x line*=bottom,axis y line*=left,
+          xmin=-.65,xmax=4.65,ymin=-3,ymax=49,
+          xtick={0,1,2,3,4},
+          xticklabels={0--9,10--19,20--29,30--39,40--49},
+          ytick={0,10,20,30,40},
+          xlabel={Шаги генерации с исходной моделью},
+          ylabel={Снижение NMSE, \%},
+          label style={font=\fontsize{9}{11}\selectfont},
+          tick label style={font=\fontsize{9}{11}\selectfont},
+          tick style={draw=Ink,line width=.4pt},
+          axis line style={draw=Ink,line width=.45pt},
+          ymajorgrids=true,grid style={draw=black!10,line width=.3pt},
+          clip=false,
+          /pgf/number format/use comma,
+        ]
+          \addplot[ybar,bar width=9mm,bar shift=0pt,fill=Muted,draw=none]
+            table[x=position,y=gain]{\windowdata};
+          \addplot[ybar,bar width=9mm,bar shift=0pt,fill=Accent,draw=none]
+            coordinates {(2,36.488425)};
+          \addplot[only marks,mark=none,
+            error bars/.cd,y dir=both,y explicit,
+            error bar style={draw=Ink,line width=.5pt},
+            error mark options={draw=Ink,rotate=90,mark size=2pt,line width=.5pt}]
+            table[x=position,y=gain,
+              y error minus expr=\thisrow{gain}-\thisrow{low},
+              y error plus expr=\thisrow{high}-\thisrow{gain}]{\windowdata};
+          \addplot[only marks,mark=none,point meta=explicit,
+            nodes near coords,
+            every node near coord/.append style={
+              font=\fontsize{10}{12}\selectfont\bfseries,
+              text=Ink,anchor=south,inner sep=0pt,
+              /pgf/number format/fixed,/pgf/number format/precision=1,
+              /pgf/number format/fixed zerofill}]
+            table[x=position,y expr=\thisrow{high}+2.4,meta=gain]{\windowdata};
+        \end{axis}
+      \end{tikzpicture}};
+      \node[text width=43mm,font=\fontsize{9.5}{11.5}\selectfont]
+        at (110mm,-29mm) {\setlength{\parskip}{0pt}\textbf{Проверка}\par\vspace{1mm}
+          Исходная: 10 шагов.\par
+          Квантованная: 40 шагов.\par\vspace{1.5mm}
+          256 пар, общие шумы.\par
+          Без сброса латента.};
+      \node[text width=43mm,text=Accent,font=\fontsize{14}{16}\selectfont\bfseries]
+        at (110mm,-58mm) {$-36{,}5\%$ NMSE};
+      \node[text width=43mm,font=\fontsize{9.5}{11.5}\selectfont]
+        at (110mm,-65mm) {при возврате шагов 20--29.};
+      \node[text width=43mm,text=Subtle,font=\fontsize{9}{11}\selectfont]
+        at (110mm,-74mm) {Диагностика,\par не улучшение FID.};
+      \node[text width=96mm,text=Subtle,font=\fontsize{8.5}{10.5}\selectfont]
+        at (7mm,-74mm) {NMSE: нормированная ошибка конечного латента\par
+          относительно исходной модели. Интервалы: 95\%.};
+      \node[text width=146mm,font=\fontsize{10.5}{12.5}\selectfont\bfseries]
+        at (7mm,-84mm) {Идея: учитывать важность шагов при обучении кодбуков.};
+    \end{scope}
+  \end{tikzpicture}
+\end{frame}
+\end{document}
