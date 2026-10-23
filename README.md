@@ -1,6 +1,16 @@
 # Quantization of Diffusion Models
 
-This repository contains coursework materials, code and compact experiment summaries for a study of **post-training quantization of Stable Diffusion 1.5**.
+This repository contains research on **post-training quantization of diffusion models**: the completed Stable Diffusion 1.5 coursework and the ongoing diploma project on diffusion transformers.
+
+## Current Article: Diffusion Transformers
+
+**Adapting Activation-Aware Vector Quantization to Diffusion Transformers**
+
+[Article PDF](diploma/main.pdf) · [LaTeX](diploma/main.tex) · [Bibliography](diploma/references.bib) · [Project and build instructions](diploma/README.md)
+
+The draft includes an abstract, introduction, formal problem statement, and completed initial experiments: transferring VQDM to DiT-XL/2, temporal and structural sensitivity, and controlled codebook-refitting comparisons. Quantitative results and their provenance are in [article_assets/results.json](diploma/article_assets/results.json).
+
+## Completed Coursework: Stable Diffusion 1.5
 
 Full coursework PDF: [coursework/coursework_paper/main.pdf](coursework/coursework_paper/main.pdf)
 
@@ -25,7 +35,7 @@ cursovaya/
 |   |-- run_summaries/     compact processed result tables
 |   |-- diffusion_quantization_research_map.md
 |   `-- requirements.txt   shared Python dependencies
-`-- diploma/               reserved for subsequent diploma work
+`-- diploma/               DiT article, figure, and compact supporting results
 ```
 
 ---

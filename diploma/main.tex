@@ -85,7 +85,7 @@ to Diffusion Transformers}
 \maketitle
 
 \begin{abstract}
-Diffusion transformers repeatedly apply the same denoising network to states whose distributions change throughout generation. This makes the transfer of post-training quantization methods developed for other diffusion architectures nontrivial. We investigate activation-aware vector quantization of DiT-XL/2 on ImageNet at $256\times256$ resolution, using VQDM as an initial algorithmic baseline. Quantizing all five linear weight matrices in each of the 28 transformer blocks yields \VQBits{} bits per parameter, but increases FID from \OriginalFID{} to \VQFID{} under a shared 50-step DDPM evaluation protocol. To identify the source of this degradation, we combine timestep-resolved measurements with paired interventions in sampling windows and layer families. Restoring the original denoiser for ten middle steps reduces final latent error by about 37\%, whereas restoring the last ten steps has little effect. Additional experiments identify sensitivity in adaptive layer normalization and show that simple late-step weighting or separate temporal codebooks do not outperform matched uniform-refitting controls. These preliminary findings motivate a more selective treatment of temporal and structural sensitivity rather than a direct transfer of a static reconstruction criterion.
+We study activation-aware vector quantization of DiT-XL/2. Transferred VQDM achieves \VQBits{} bits per parameter but raises ImageNet256 FID from \OriginalFID{} to \VQFID{}. Paired interventions show that restoring ten middle denoising steps reduces final latent error by \MiddleGainThousand\%, while restoring the last ten has little effect. AdaLN is also sensitive. Simple temporal weighting and extra codebooks do not outperform matched uniform refitting. These results motivate calibration that accounts for temporal and structural sensitivity.
 \end{abstract}
 
 \textbf{Keywords:} diffusion transformers, post-training quantization, vector quantization, temporal sensitivity, calibration
@@ -114,6 +114,8 @@ PTQ4DiT~\citep{wu2024ptq4dit} balances channel salience and uses temporal salien
 
 Let $f_{\theta}(z_s,t_s,c)$ denote a pretrained denoiser at sampling step $s$, with latent $z_s$, original diffusion timestep $t_s$, and class condition $c$. Sampling runs from high to low noise, so $s$ increases while $t_s$ decreases. The same parameters $\theta$ are used at every step. We seek a compressed representation $\widehat\theta$ under a storage budget $B$, keeping the architecture, sampler, and conditioning fixed. Final image quality is evaluated externally; it is not directly optimized by the layerwise calibration loss.
 
+The calibration sample consists of teacher-generated states $\mathcal D_{\mathrm{cal}}=\{(z_s^{(j)},t_s,c_j):j=1,\ldots,n;\ s=0,\ldots,S-1\}$. Class labels are selected from the 1,000 ImageNet classes; each trajectory starts from a standard Gaussian latent in $\mathbb R^{4\times32\times32}$ and follows the fixed DDPM sampler. For the current $n=256$ calibration set, classes are sampled without replacement. Trajectories have separate random seeds, but states within a trajectory are dependent. The working assumption is that teacher inputs cover useful directions for generation; this does not guarantee coverage of states reached after quantization.
+
 For a linear layer $\ell$, let $W_\ell\in\mathbb R^{o_\ell\times i_\ell}$ and let $X_{\ell,s}$ contain calibration input rows at step $s$. Define
 \begin{equation}
  H_{\ell,s}=\frac{X_{\ell,s}^{\mathsf T}X_{\ell,s}}{N_{\ell,s}},\qquad
@@ -122,35 +124,44 @@ For a linear layer $\ell$, let $W_\ell\in\mathbb R^{o_\ell\times i_\ell}$ and le
 \end{equation}
 where $N_{\ell,s}$ is the number of input rows and $\omega_s\geq0$, with positive total weight. These matrices are uncentered second moments, not centered covariances. The baseline pools all timesteps uniformly; each step contributes the same number of rows within a given layer. Attention/MLP inputs include token positions, whereas adaLN inputs contain conditioning vectors.
 
-Write $Q_\ell(C_\ell,a_\ell,\sigma_\ell)$ for the reconstructed weight matrix. A subvector of length $d$ is represented by a sum of $M$ codewords, with a stored row scale where applicable:
+Write $Q_\ell(C_\ell,a_\ell,\sigma_\ell)$ for the reconstructed weight matrix, with codebooks $C_{\ell,m}\in\mathbb R^{K_m\times d}$. A subvector of length $d$ is represented by a sum of $M$ codewords, with a stored row scale where applicable:
 \begin{equation}
  \widehat w_{\ell,r,g}=\sigma_{\ell,r}\sum_{m=1}^{M}C_{\ell,m}[a_{\ell,r,g,m}],
  \qquad a_{\ell,r,g,m}\in\{1,\ldots,K_m\}.
  \label{eq:vq}
 \end{equation}
-The transferred activation-aware quantizer approximately solves
+For fixed calibration inputs, the activation-aware loss for layer $\ell$ is the mean squared Euclidean error of its output:
+\begin{equation}
+ \mathcal L_\ell=\operatorname{tr}\!\left[(W_\ell-Q_\ell)H_\ell(\omega)(W_\ell-Q_\ell)^{\mathsf T}\right].
+ \label{eq:layerloss}
+\end{equation}
+This surrogate omits interactions between layers and the effect of trajectory drift. Temporal weights $\omega$ are fixed for each calibration variant, not learned in the minimization below. Biases and parameters outside the selected matrices remain unchanged. The storage measure $b$ counts packed indices, codebooks, scales, and all remaining DiT parameters, divided by the total parameter count. We report this quantity as bits per parameter (bpp), excluding the VAE. It describes a logical packed representation, not a serialized checkpoint size or an inference speedup.
+
+Calibration trajectories are separate from evaluation samples; diagnostics use subsets of the evaluation selection. Repeated evaluation of exploratory variants is not a cross-validation procedure or a held-out confirmation of a selected method. External criteria are generation FID, sFID, IS, precision, and recall under a fixed sampling protocol; trajectory NMSE is a separate diagnostic. The transferred activation-aware quantizer approximately solves
 \begin{equation}
  (C^*,a^*,\sigma^*)\in\mathop{\arg\min}_{C,a,\sigma:\,b(C,a,\sigma)\leq B}
- \sum_\ell\operatorname{tr}\!\left[
- (W_\ell-Q_\ell)H_\ell(\omega)(W_\ell-Q_\ell)^{\mathsf T}\right].
+ \sum_\ell\mathcal L_\ell.
  \label{eq:objective}
 \end{equation}
-For fixed calibration inputs, each summand equals the mean squared Euclidean error of a layer output. This surrogate omits interactions between layers and the effect of trajectory drift. The storage measure $b$ counts packed indices, codebooks, scales, and all remaining DiT parameters, divided by the total parameter count. We report this quantity as bits per parameter (bpp), excluding the VAE. It describes a logical packed representation, not a serialized checkpoint size or an inference speedup.
 
 \section{Experiments}\label{sec:exp}
 
 \subsection{Objective and protocol}\label{sec:protocol}
 
-The experiments test whether a transferred activation-aware vector quantizer preserves DiT generation quality, and whether controlled temporal and structural interventions identify useful directions for adaptation. All results below come from completed runs. Measurements from the literature are explicitly separated from our own evaluations.
+We investigate three questions: how much generation quality is lost when VQDM is transferred to DiT; whether large observed errors identify influential sampling windows and components; and whether simple temporal modifications improve quality beyond uniform refitting. The first comparison uses full image-generation metrics, the second uses paired trajectory interventions, and the third controls codebook-fitting updates and reports storage. All results below come from completed runs. Measurements from the literature are explicitly separated from our own evaluations.
 
 \paragraph{Model and quantization.}
 We use the original class-conditional DiT-XL/2 checkpoint for ImageNet $256\times256$~\citep{peebles2023dit}: 28 blocks, hidden width 1152, 16 attention heads, and latent patch size $2\times2$. We quantize the QKV and output attention projections, both MLP projections, and the adaLN modulation matrix in every block. These 140 matrices contain 668,860,416 weights; 6,269,216 other parameter entries remain unquantized. The timestep/class embedders, patch projection, and final output layer are not quantized. VQDM uses $d=8$, $M=4$, $K_m=256$, beam width 8, and quantization seed 0. Initialization allows 100 iterations; codebook fitting uses learning rate $10^{-4}$, 100 updates per epoch, a 1,000-epoch limit, and relative-MSE stopping tolerance 0.01. Codebook values are stored in FP16. Codebooks are optimized during quantization, but the initial baseline receives no subsequent block- or network-output fine-tuning.
+
+For each selected matrix, VQDM initializes additive codebooks and assignments, then alternates continuous codebook optimization against Equation~\eqref{eq:layerloss} with beam-search assignment updates. The input second moments remain fixed to the original teacher cache. Blocks provide the processing and checkpointing units, but this baseline does not reconstruct whole-block outputs. Thus the calibrated solution is a set of codebooks and discrete assignments, not a retrained dense transformer.
 
 \paragraph{Calibration data.}
 We generate 256 class-conditioned teacher trajectories with selection seed 0, covering 256 distinct ImageNet classes. Both conditional and unconditional CFG branches and all 50 DDPM steps contribute to the shared input-statistics cache. The teacher runs in FP16 and second moments are accumulated in FP64. Only these generated calibration trajectories enter quantization; real ImageNet images are not used to fit the codebooks. This calibration set is distinct from the evaluation and diagnostic samples.
 
 \paragraph{Evaluation and timing.}
 We generate 10,000 images with DDPM50 and CFG 1.5, using selection seed 20261005 and ten samples per ImageNet class. The original and quantized models use paired initial/per-step random streams. Quality evaluation uses the official ADM TensorFlow evaluator~\citep{dhariwal2021adm}, its ImageNet256 reference batch, and the same image preprocessing for all models. We report FID and spatial FID (sFID; lower is better), Inception Score (IS), precision, and recall (higher is better). Evaluation materializes dense FP32 weights and disables TF32; activations are not quantized. Logical bpp counts the remaining unquantized entries at their stored FP16 precision. Quantization took \VQSeconds{} seconds on four H200 NVL GPUs, excluding \CalibrationSeconds{} seconds for the shared teacher-statistics collection. These are preprocessing times, not sampling throughput measurements.
+
+The evaluation set is reused across the reported exploratory variants; ImageNet reference images do not enter codebook fitting. We do not claim a held-out improvement or estimate variability across independent quantizer seeds. Compact measurements and their provenance are available with the article at \url{https://github.com/YaguarEgor/diffusion_models_vector_quantization/tree/main/diploma}.
 
 \subsection{Initial transfer quality}\label{sec:quality}
 
@@ -262,7 +273,6 @@ The completed experiments establish a transfer gap and localize promising target
 
 Further work should separate the effects of temporal weights, reconstruction level, code reassignment, and optimization budget, then validate selected variants with full image-generation metrics and independent calibration/quantizer seeds. Comparisons with published methods must control the quantized layers, activation precision, sampler, and evaluation sample count. Until those checks are completed, the strongest supported conclusion is diagnostic: a static layerwise objective transfers imperfectly, and the importance of a denoising error cannot be inferred from its timestep magnitude alone.
 
-\clearpage
 \bibliographystyle{unsrtnat}
 \bibliography{references}
 
