@@ -1,0 +1,141 @@
+{
+  "pages": 20,
+  "unsuccessful_slides": 4,
+  "tex_overflows": 0,
+  "words_inside_page": true,
+  "all_pages_nonblank": true,
+  "first_person_absent": true,
+  "footer_absent": true,
+  "page_geometry": [
+    {
+      "page": 1,
+      "words": 91,
+      "bottom": 207.295911,
+      "page_height": 283.46
+    },
+    {
+      "page": 2,
+      "words": 110,
+      "bottom": 259.591146,
+      "page_height": 283.46
+    },
+    {
+      "page": 3,
+      "words": 105,
+      "bottom": 256.157146,
+      "page_height": 283.46
+    },
+    {
+      "page": 4,
+      "words": 164,
+      "bottom": 259.962146,
+      "page_height": 283.46
+    },
+    {
+      "page": 5,
+      "words": 103,
+      "bottom": 244.856911,
+      "page_height": 283.46
+    },
+    {
+      "page": 6,
+      "words": 114,
+      "bottom": 258.822146,
+      "page_height": 283.46
+    },
+    {
+      "page": 7,
+      "words": 111,
+      "bottom": 268.508146,
+      "page_height": 283.46
+    },
+    {
+      "page": 8,
+      "words": 110,
+      "bottom": 271.751911,
+      "page_height": 283.46
+    },
+    {
+      "page": 9,
+      "words": 111,
+      "bottom": 260.86791,
+      "page_height": 283.46
+    },
+    {
+      "page": 10,
+      "words": 126,
+      "bottom": 273.470911,
+      "page_height": 283.46
+    },
+    {
+      "page": 11,
+      "words": 81,
+      "bottom": 261.931146,
+      "page_height": 283.46
+    },
+    {
+      "page": 12,
+      "words": 120,
+      "bottom": 270.652146,
+      "page_height": 283.46
+    },
+    {
+      "page": 13,
+      "words": 115,
+      "bottom": 259.396146,
+      "page_height": 283.46
+    },
+    {
+      "page": 14,
+      "words": 124,
+      "bottom": 256.681146,
+      "page_height": 283.46
+    },
+    {
+      "page": 15,
+      "words": 116,
+      "bottom": 242.083911,
+      "page_height": 283.46
+    },
+    {
+      "page": 16,
+      "words": 74,
+      "bottom": 223.870146,
+      "page_height": 283.46
+    },
+    {
+      "page": 17,
+      "words": 125,
+      "bottom": 255.811146,
+      "page_height": 283.46
+    },
+    {
+      "page": 18,
+      "words": 114,
+      "bottom": 248.960146,
+      "page_height": 283.46
+    },
+    {
+      "page": 19,
+      "words": 111,
+      "bottom": 242.382146,
+      "page_height": 283.46
+    },
+    {
+      "page": 20,
+      "words": 116,
+      "bottom": 229.586911,
+      "page_height": 283.46
+    }
+  ],
+  "contact_sheets": [
+    "contact_1.png",
+    "contact_2.png"
+  ],
+  "speaker_notes_pages": 20,
+  "speaker_notes_geometry": "passed",
+  "speaker_notes_sha256": "8f82ba2b02392c794d750979d9cc8c8649aba5647fd8f4a827a075560d5a8a98",
+  "pdf_sha256": "f0c584e2e551b313bcd45d48a6ea87ee48403eb3176b28ea9edf920096ca960e",
+  "source_sha256": "e390e4fbfcc551abc18118073233b740308e5518a9ac1591b9dc3ed4966e39cc",
+  "visual_review": "Contact sheets and full-size pages must also be inspected."
+}

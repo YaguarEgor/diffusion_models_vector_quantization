@@ -1,0 +1,684 @@
+% Build twice with XeLaTeX; auxiliary files belong in _build.
+\documentclass[aspectratio=169,10pt]{beamer}
+\usepackage{fontspec}
+\usepackage[english,russian]{babel}
+\setsansfont{Arial}
+\setmainfont{Arial}
+\usefonttheme{professionalfonts}
+\usepackage{amsmath,amssymb,booktabs,tabularx,array,graphicx,tikz}
+\usetikzlibrary{arrows.meta,positioning,calc}
+\definecolor{Ink}{HTML}{222222}
+\definecolor{Accent}{HTML}{176B75}
+\definecolor{Second}{HTML}{B84D56}
+\setbeamercolor{normal text}{fg=Ink,bg=white}
+\setbeamercolor{frametitle}{fg=Ink,bg=white}
+\setbeamercolor{structure}{fg=Ink}
+\setbeamerfont{frametitle}{size=\fontsize{17}{20},series=\bfseries}
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{footline}{}
+\setbeamertemplate{itemize item}{\small\textbullet}
+\setbeamersize{text margin left=8mm,text margin right=8mm}
+\setbeamertemplate{frametitle}{\vspace{3mm}\insertframetitle\par\vspace{1mm}}
+\setlength{\parskip}{1.3mm}
+\newcommand{\takeaway}[1]{\par\vspace{1.5mm}{\bfseries #1\par}}
+\newcommand{\smalltext}[1]{{\fontsize{10}{12}\selectfont #1\par}}
+\newcommand{\tights}{\setlength{\itemsep}{1.4mm}\setlength{\parsep}{0pt}\setlength{\parskip}{0pt}}
+\newenvironment{datatable}{\par\begingroup\fontsize{10}{12}\selectfont\setlength{\tabcolsep}{4pt}\renewcommand{\arraystretch}{1.25}}{\par\endgroup}
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+\DeclareMathOperator{\argmin}{arg\,min}
+\DeclareMathOperator{\argmax}{arg\,max}
+\DeclareMathOperator{\softmax}{softmax}
+\hypersetup{pdftitle={Векторная квантизация DiT: VQ4DiT и DPQ},pdfauthor={},
+  pdfsubject={Устройство DiT, представление весов, калибровка и результаты двух статей},
+  colorlinks=true,urlcolor=Accent}
+
+\begin{document}
+
+% 01. Introduction.
+\begin{frame}[t]
+  \vspace{6mm}
+  {\fontsize{24}{28}\selectfont\bfseries Векторная квантизация DiT\par}
+  \vspace{4mm}
+  {\fontsize{20}{24}\selectfont VQ4DiT и DPQ\par}
+  \vspace{6mm}
+  \begin{enumerate}\tights
+    \item Устройство DiT-XL/2, временные условия, ODE и SDE.
+    \item VQ4DiT: выбор вектора из кодбука через обучаемую смесь.
+    \item DPQ: кодбуки подпространств и чередование двух целей.
+  \end{enumerate}
+  \vspace{3mm}
+  \takeaway{Что хранится вместо весов, на каких данных обучается\par
+  и каким образом уточняются дискретные индексы?}
+\end{frame}
+
+% 02. Retained from dit_overview/dit_experiments.tex, frame 02.
+\begin{frame}[t]{Один шаг генерации проходит через всю DiT}
+  \smalltext{Патч $2\times2$ в латенте: $2\cdot2\cdot4=16$ чисел $\to$ обучаемая проекция $\to$ 1152 признака.
+  Сетка $32\times32$ превращается в $16\times16=256$ токенов; добавляется позиция.}
+  \begin{center}
+    \begin{tikzpicture}[>=Stealth,font=\fontsize{10}{12}\selectfont,
+      stage/.style={draw=Ink,minimum height=10mm,align=center,inner sep=2mm},node distance=4mm]
+      \node[stage] (latent) {Латент\\$32\times32\times4$};
+      \node[stage,right=of latent] (tokens) {256 токенов\\по 1152 числа};
+      \node[stage,right=of tokens] (blocks) {28 разных\\блоков};
+      \node[stage,right=of blocks] (output) {Шум и\\дисперсия};
+      \draw[->] (latent)--(tokens);
+      \draw[->] (tokens)--(blocks);
+      \draw[->] (blocks)--(output);
+      \node[below=6mm of blocks,align=center,text width=75mm] (sampler) {\mbox{DDPM50: обновление латента.}\\\mbox{Добавка шума до финального шага.}};
+      \draw[->] (output.south)--++(0,-4mm)-|(sampler.north);
+      \draw[->] (sampler.west)-|(latent.south);
+    \end{tikzpicture}
+  \end{center}
+  \smalltext{50 обратных переходов вместо исходной сетки из 1000 времён; коэффициенты пересчитаны.
+  Финальный переход без случайной добавки. CFG: две ветки в одном батче.}
+  \takeaway{Веса фиксированы на всех 50 шагах; меняются латент и время.}
+\end{frame}
+
+% 03. Retained from dit_overview/dit_experiments.tex, frame 03.
+\begin{frame}[t]{Слои одного блока и управление условием}
+  \begin{columns}[T,onlytextwidth]
+    \begin{column}{.62\textwidth}
+      \begin{datatable}
+        \begin{tabular}{@{}lrr@{}}
+          \toprule
+          Матрица & Вход $\to$ выход & Млн весов \\
+          \midrule
+          Attention: QKV & $1152\to3456$ & 3.981312 \\
+          Attention: выход & $1152\to1152$ & 1.327104 \\
+          MLP: расширение & $1152\to4608$ & 5.308416 \\
+          MLP: сжатие & $4608\to1152$ & 5.308416 \\
+          adaLN & $1152\to6912$ & 7.962624 \\
+          \midrule
+          Всего без смещений & & 23.887872 \\
+          \bottomrule
+        \end{tabular}
+      \end{datatable}
+    \end{column}
+    \begin{column}{.35\textwidth}
+      $c=e_t(t)+e_y(y)$.
+      \par Время: небольшая MLP. Класс: строка обученной таблицы.
+      \par Своя adaLN в каждом блоке: сдвиг, масштаб и гейт для двух веток.
+      \par Две LayerNorm без обучаемых параметров; GELU, softmax и остаточные связи.
+    \end{column}
+  \end{columns}
+  \smalltext{Со смещениями: 23\,905\,152 параметра на блок. В 28 блоках квантуется
+  668\,860\,416 весов; смещения сохраняются.}
+  \takeaway{Attention связывает токены, MLP меняет признаки, adaLN управляет обеими ветками.}
+\end{frame}
+
+% Conditioning and parameter sharing.
+\begin{frame}[t]{Что меняется при переходе к другому времени}
+  \[
+    c=e_t(t)+e_y(y),\qquad
+    (\beta,\gamma,\alpha)_{l}=\mathrm{adaLN}_{l}(c).
+  \]
+  \begin{itemize}\tights
+    \item \textbf{Между блоками:} у каждого из 28 блоков свои матрицы attention,
+    MLP и adaLN. Это разные блоки, а не 28 повторений одних весов.
+    \item \textbf{Между временами:} веса одного блока не меняются.
+    Новый $t$ меняет вектор условия и значения сдвига, масштаба и гейта,
+    которые выдаёт adaLN.
+    \item \textbf{Класс изображения:} индекс класса выбирает строку обученной таблицы.
+    Время кодируется синусоидальными признаками и небольшой MLP.
+  \end{itemize}
+  \smalltext{В рассматриваемых схемах квантуются матрицы DiT-блоков.
+  Кодировщики времени и класса остаются вне этой области, как и выходной модуль
+  с нормализацией и проекцией: около 2.69 млн весов.}
+  \takeaway{Разные активации и гейты при разных $t$\par
+  не означают разные веса или кодбуки для каждого времени.}
+\end{frame}
+
+% Define the generation sequence before referring to calibration trajectories.
+\begin{frame}[t]{Как шум превращается в изображение}
+  \textbf{Латент} является внутренним представлением изображения.
+  Сначала он заполнен случайным шумом, затем многократно обновляется.
+  \[
+    \text{Шум}\ \longrightarrow\
+    \underbrace{z^{(1)}}_{\text{после 1 шага}}\ \longrightarrow\
+    \cdots\ \longrightarrow\
+    \underbrace{z^{(50)}}_{\text{после 50 шагов}}
+    \ \xrightarrow{\text{VAE}}\ \text{Изображение}.
+  \]
+  \begin{itemize}\tights
+    \item В каждом шаге \textbf{вся DiT} обрабатывает текущий латент и время.
+    На выходе: 4 канала предсказания шума и ещё 4 для дисперсии.
+    \item DDPM по этим предсказаниям вычисляет следующий латент и добавляет
+    новый случайный шум, кроме последнего перехода.
+    \item Новый латент снова проходит через те же 28 блоков.
+    В DDPM50 таких переходов 50, в DDPM250 их 250. Веса сети не меняются.
+  \end{itemize}
+  \takeaway{Траектория генерации: цепочка всех промежуточных латентов.\par
+  Для калибровки берутся состояния внутри этой цепочки.}
+\end{frame}
+
+% Explain sampling through finite updates, not differential-equation notation.
+\begin{frame}[t]{ODE и SDE: два способа обновлять латент}
+  Сеть предсказывает шум; \textbf{семплер} обновляет латент.
+  ODE/SDE относятся к правилу обновления, а не к отдельному слою сети.
+  \begin{columns}[T,onlytextwidth]
+    \begin{column}{.48\textwidth}
+      {\bfseries SDE: путь с новым шумом\par}
+      Практический пример: \textbf{DDPM}.
+      \[
+        z_{\mathrm{next}}=F_\theta(z_t,t,y)+\sigma_t\xi_t.
+      \]
+      Новый шум добавляется на каждом переходе, кроме последнего.
+      \par С одним стартом разные добавки дают разные пути.
+    \end{column}
+    \begin{column}{.48\textwidth}
+      {\bfseries ODE: путь без нового шума\par}
+      Связанный пример: \textbf{DDIM, $\eta=0$}.
+      \[
+        z_{\mathrm{next}}=G_\theta(z_t,t,y).
+      \]
+      Случаен только начальный латент.
+      \par При фиксированных модели, условии и правиле перехода он определяет весь путь.
+    \end{column}
+  \end{columns}
+  \vspace{1mm}
+  \smalltext{SDE/ODE описывают непрерывное движение; DDPM/DDIM задают дискретные
+  переходы. Их правила $F_\theta$ и $G_\theta$ различаются: недостаточно просто убрать шум.}
+  \takeaway{При оценке DiT тоже работает DDPM.\par
+  Новый шум добавляется не только при калибровке.}
+\end{frame}
+
+% Keep calibration and evaluation explicit for each method.
+\begin{frame}[t]{Калибровка и оценка: что запускается}
+  \begin{datatable}
+    \begin{tabularx}{\textwidth}{@{}L{20mm}>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}X@{}}
+      \toprule
+      Метод & При калибровке & При оценке качества \\
+      \midrule
+      VQ4DiT & Исходная DiT пошагово генерирует изображения через DDPM.
+      Берутся промежуточные латенты и выходы блоков. & Квантованная DiT сама генерирует изображения
+      через DDPM. В статье: 50, 100 и 250 шагов. \\
+      \addlinespace
+      DPQ & ImageNet $\to$ VAE $\to$ чистый латент. Выбирается $t$ и добавляется
+      известный шум. Обратная генерация не нужна. & После обучения квантованная DiT
+      генерирует через DDPM. В статье: 50, 100 и 250 шагов. \\
+      \bottomrule
+    \end{tabularx}
+  \end{datatable}
+  \textbf{Текущий перенос VQDM:} DDPM50 используется и для сбора входов слоёв
+  исходной DiT, и для генерации квантованной DiT при оценке.
+  \takeaway{В DPQ случайное зашумление примера не является SDE-семплингом:\par
+  вход сразу строится для одного $t$, без цепочки обратных переходов.}
+\end{frame}
+
+% Separate consequences of sampler choice from model compression.
+\begin{frame}[t]{На что влияет выбор способа генерации}
+  \begin{enumerate}\tights
+    \item \textbf{Изображения и метрики.} Другое правило перехода даёт другие
+    промежуточные латенты и итоговые изображения. Улучшение FID не гарантировано.
+    \item \textbf{Активации для квантизации.} Если данные собраны из генерации
+    исходной модели, смена семплера может изменить распределение этих данных.
+    Качество на новом семплере необходимо проверить отдельно.
+    \item \textbf{Повторяемость.} Для DDPM нужно согласовать и начальный латент,
+    и случайные добавки на переходах. Для детерминированного пути достаточно
+    фиксировать начальный латент, модель, условие и правило перехода.
+    \item \textbf{Время.} Основная стоимость связана с числом проходов DiT,
+    а не с созданием случайного шума. Отсутствие новых добавок само по себе
+    не означает более быструю генерацию.
+  \end{enumerate}
+  \takeaway{Выбор семплера не меняет веса или кодбуки.\par
+  Это отдельная настройка генерации, а не переход от калибровки к оценке.}
+\end{frame}
+
+\section{VQ4DiT}
+
+% VQ4DiT 1/10.
+\begin{frame}[t]{VQ4DiT: зачем обучать назначения}
+  \textit{VQ4DiT: Efficient Post-Training Vector Quantization for Diffusion Transformers.}
+  J.~Deng et al., AAAI 2025.
+
+  \textbf{Отправная точка:} несколько весов заменяются одним вектором из кодбука.
+  Разные участки матрицы могут получить одинаковый индекс.
+  \[
+    \widehat w_s=C[a_s],\qquad
+    \frac{\partial\mathcal L}{\partial C[k]}
+      =\sum_{s:a_s=k}\frac{\partial\mathcal L}{\partial\widehat w_s}.
+  \]
+  \begin{itemize}\tights
+    \item Если двум участкам нужны противоположные исправления, их градиенты частично гасят друг друга.
+    \item Перемещение общего вектора не позволяет независимо исправить оба участка.
+  \end{itemize}
+  \takeaway{Идея VQ4DiT: обучать не только значения в кодбуке,\par
+  но и выбор вектора для каждого участка весов.}
+\end{frame}
+
+% VQ4DiT 2/10.
+\begin{frame}[t]{Что хранится вместо матрицы весов}
+  Матрица $W\in\mathbb R^{O\times I}$ делится вдоль строк на векторы длины $d$.
+  У каждой матрицы свой кодбук $C\in\mathbb R^{K\times d}$, общий для всех её позиций.
+  \[
+    W_{o,:}=[\,w_{o,1}\mid w_{o,2}\mid\cdots\mid w_{o,I/d}\,],
+    \qquad \widehat w_{o,j}=C[a_{o,j}].
+  \]
+  \begin{datatable}
+    \begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}lrrl@{}}
+      \toprule
+      Профиль & $K$ & $d$ & Биты на вес в индексах \\
+      \midrule
+      3 бита & 64 & 2 & $\log_2(64)/2=3$ \\
+      2 бита & 256 & 4 & $\log_2(256)/4=2$ \\
+      \bottomrule
+    \end{tabular*}
+  \end{datatable}
+  \smalltext{Для матрицы $1152\times1152$ при $d=4$: 331\,776 индексов,
+  но один кодбук из 256 векторов по 4 числа. На вектор весов приходится один индекс.}
+  \takeaway{VQ4DiT: 5 матриц в блоке $\times$ 28 блоков = 140 кодбуков.\par
+  Кодбуки не общие между матрицами; по времени $t$ они не меняются.}
+\end{frame}
+
+% VQ4DiT 3/10.
+\begin{frame}[t]{Инициализация: k-means и два кандидата}
+  \begin{enumerate}\tights
+    \item Все векторы одной матрицы кластеризуются по близости весов.
+    Центры кластеров становятся начальными значениями кодбука.
+    \item Для каждого вектора $w_s$ находятся \textbf{два ближайших центра}:
+    \[
+      (a_{s,1},a_{s,2})=\operatorname{Top2}_{k}\bigl(-\|w_s-C[k]\|_2^2\bigr).
+    \]
+    \item Вместо немедленного выбора одного центра сохраняются оба кандидата.
+    Их начальные доли равны: $r_{s,1}=r_{s,2}=1/2$.
+  \end{enumerate}
+  \begin{center}
+    \begin{tikzpicture}[>=Stealth,font=\small]
+      \node (w) at (0,0) {$w_s$};
+      \node[text=Accent] (c1) at (4,.45) {$C[a_{s,1}],\quad r_{s,1}=0.5$};
+      \node[text=Second] (c2) at (4,-.45) {$C[a_{s,2}],\quad r_{s,2}=0.5$};
+      \draw[->] (w)--(c1);
+      \draw[->] (w)--(c2);
+    \end{tikzpicture}
+  \end{center}
+  \takeaway{Кандидаты выбираются по весам;\par окончательное назначение определяется по работе блока.}
+\end{frame}
+
+% VQ4DiT 4/10. Separate the source of inputs from the calibration target.
+\begin{frame}[t]{VQ4DiT: калибровка по выходам блоков}
+  \textbf{1. Получить вход.} Исходная DiT запускает генерацию из случайного шума.
+  На одном из промежуточных шагов берётся её текущее состояние: латент $z_t$.
+
+  \textbf{2. Сравнить сети.} В обе DiT подаётся один и тот же вход $(z_t,t,y)$:
+  \begin{center}
+    \begin{tikzpicture}[>=Stealth,font=\fontsize{10}{12}\selectfont,
+      stage/.style={draw=Ink,align=center,inner sep=2mm,minimum height=9mm}]
+      \node[align=center] (z) at (0,0) {Общий вход\\$z_t,t,y$};
+      \node[stage,text=Accent,text width=62mm] (fp) at (5,0.65)
+        {Исходная DiT\\Выходы $h_1^{\mathrm{FP}},\ldots,h_{28}^{\mathrm{FP}}$};
+      \node[stage,text=Second,text width=62mm] (q) at (5,-0.65)
+        {Квантованная DiT\\Выходы $h_1^{\mathrm Q},\ldots,h_{28}^{\mathrm Q}$};
+      \node[stage,text width=25mm] (loss) at (10.5,0) {Разница\\28 пар\\выходов};
+      \draw[->] (z.east)--++(4mm,0)|-(fp.west);
+      \draw[->] (z.east)--++(4mm,0)|-(q.west);
+      \draw[->] (fp.east)--++(4mm,0)|-(loss.west);
+      \draw[->] (q.east)--++(4mm,0)|-(loss.west);
+    \end{tikzpicture}
+  \end{center}
+  \textbf{3. Уменьшить разницу.} Исходная сеть зафиксирована. У квантованной
+  обновляются значения кодбуков и доли кандидатов, чтобы выходы блоков стали ближе.
+  \takeaway{Следующий латент тоже задаётся исходной моделью и DDPM.\par
+  Эталон: признаки блоков, не готовые изображения. ImageNet не нужен.}
+\end{frame}
+
+% VQ4DiT 5/10.
+\begin{frame}[t]{Как градиент доходит до выбора индекса}
+  Прямо дифференцировать целочисленный индекс нельзя.
+  Во время калибровки используется непрерывная смесь:
+  \[
+    r_{s,j}=\frac{\exp z_{s,j}}{\exp z_{s,1}+\exp z_{s,2}},\qquad
+    \widetilde w_s=r_{s,1}C[a_{s,1}]+r_{s,2}C[a_{s,2}].
+  \]
+  \begin{itemize}\tights
+    \item Логиты $z_{s,1},z_{s,2}$ управляют долями двух кандидатов.
+    \item Градиент меняет и эти доли, и координаты кодовых векторов.
+    \item Индексы кандидатов при этом остаются целыми и фиксированными.
+  \end{itemize}
+  \smalltext{Иллюстрация: доли $0.5/0.5$ могут перейти в $0.1/0.9$.
+  Второй кандидат получает преимущество, хотя исходно он был дальше по весам.
+  Итерация оптимизатора не равна одному шагу DDPM.}
+  \takeaway{Обучается непрерывное предпочтение между кандидатами,\par
+  а не производная по самому целочисленному индексу.}
+\end{frame}
+
+% VQ4DiT 6/10.
+\begin{frame}[t]{Цель: повторить выходы исходных блоков}
+  Пусть $h_l^{\mathrm{FP}}(z_t,t,y)$ и $h_l^{\mathrm Q}(z_t,t,y)$ обозначают
+  выходы $l$-го блока двух сетей для общего входного латента.
+  \[
+    \mathcal L_d=
+    \mathbb E_{z_t,t,y}\sum_{l=1}^{28}
+      \left\|h_l^{\mathrm{FP}}(z_t,t,y)-h_l^{\mathrm Q}(z_t,t,y)\right\|_2^2.
+  \]
+  \begin{itemize}\tights
+    \item Учитываются все преобразования блока: attention, MLP, модуляция и остаточные связи.
+    \item Близость весов становится только начальной подсказкой;
+    обучение ориентируется на выходные признаки.
+    \item Совпадение входного латента сети не означает автоматического совпадения
+    внутренних входов всех последующих блоков.
+  \end{itemize}
+  \takeaway{Это цель по промежуточным признакам,\par
+  а не ошибка предсказания добавленного шума всей DiT.}
+\end{frame}
+
+% VQ4DiT 7/10.
+\begin{frame}[t]{Как смесь превращается в один индекс}
+  Чтобы после калибровки не хранить две доли и два индекса, добавляется штраф:
+  \[
+    \mathcal L_r=\frac1{N_v}\sum_{s=1}^{N_v}\sum_{j=1}^{2}
+      \bigl(1-|2r_{s,j}-1|\bigr),\qquad
+    \mathcal L=\mathcal L_d+\mathcal L_r.
+  \]
+  $N_v$ обозначает число векторов весов в рассматриваемой матрице.
+  \begin{itemize}\tights
+    \item При $r=0.5$ отдельное слагаемое максимально; при $r=0$ или $1$ оно равно нулю.
+    \item При достаточно малом штрафе выбирается кандидат с наибольшей долей:
+    \[
+      a_s=a_{s,\argmax_j r_{s,j}},\qquad \widehat w_s=C[a_s].
+    \]
+    \item В статье приведён порог $10^{-4}$; после фиксации доли больше не обучаются.
+  \end{itemize}
+  \takeaway{Смесь нужна только для обучения.\par
+  На генерации снова используются кодбук и один индекс.}
+\end{frame}
+
+% VQ4DiT 8/10.
+\begin{frame}[t]{Полный проход VQ4DiT}
+  \begin{enumerate}\tights
+    \item Разбить веса матриц блоков на векторы и получить кодбуки через k-means.
+    \item Сохранить по два кандидата на вектор, задать равные доли.
+    \item Получать латенты и эталонные выходы блоков на промежуточных шагах
+    генерации исходной модели.
+    \item Обновлять кодбуки и доли по $\mathcal L_d+\mathcal L_r$.
+    \item Зафиксировать по одному кандидату и оценить самостоятельную генерацию.
+  \end{enumerate}
+  \begin{datatable}
+    \begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}ll@{}}
+      \toprule
+      Оптимизатор & RMSprop \\
+      Шаг для долей / остальных параметров & $5\cdot10^{-2}$ / $10^{-4}$ \\
+      Батч / число обновлений & 16 / 500 \\
+      Оборудование и время в статье & Одна A100; от 20 минут до 5 часов \\
+      \bottomrule
+    \end{tabular*}
+  \end{datatable}
+  \smalltext{Настройки из раздела экспериментального протокола. Время зависит от выбранной конфигурации;
+  это не измерение в текущем проекте.}
+\end{frame}
+
+% VQ4DiT 9/10.
+\begin{frame}[t]{VQ4DiT: опубликованные результаты}
+  DiT-XL/2, ImageNet $256\times256$, CFG\,$=1.5$, 10\,000 изображений; ADM.
+  \begin{datatable}
+    \begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}llrrrr@{}}
+      \toprule
+      Шагов & Модель & FID$\downarrow$ & sFID$\downarrow$ & IS$\uparrow$ & Precision$\uparrow$ \\
+      \midrule
+      50 & FP & 6.72 & 21.13 & 243.90 & 0.7848 \\
+      50 & VQ4DiT, 3 бита & 11.91 & 24.18 & 263.93 & 0.9096 \\
+      50 & VQ4DiT, 2 бита & 12.42 & 25.16 & 209.95 & 0.8725 \\
+      \midrule
+      250 & FP & 5.33 & 17.85 & 275.13 & 0.8216 \\
+      250 & VQ4DiT, 3 бита & 10.59 & 23.03 & 267.46 & 0.9094 \\
+      250 & VQ4DiT, 2 бита & 11.87 & 23.27 & 219.33 & 0.8882 \\
+      \bottomrule
+    \end{tabular*}
+  \end{datatable}
+  \smalltext{Таблица 3 статьи. Номинальная битность относится к индексам;
+  кодбуки и несжатые модули требуют дополнительной памяти.}
+  \takeaway{Генерация сохраняется даже при 2 битах на индексы,\par
+  но FID заметно хуже исходной модели. Высокий IS не отменяет этого разрыва.}
+\end{frame}
+
+% VQ4DiT 10/10.
+\begin{frame}[t]{Что даёт свобода выбора назначения}
+  Двухбитный профиль, DDPM50. Меняется число кандидатов $n$ на вектор.
+  \begin{datatable}
+    \begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}lrrr@{}}
+      \toprule
+      $n$ & FID$\downarrow$ & sFID$\downarrow$ & IS$\uparrow$ \\
+      \midrule
+      1 & 60.16 & 55.77 & 32.48 \\
+      2 & 12.42 & 25.16 & 209.95 \\
+      3 & 12.22 & 24.94 & 214.11 \\
+      4 & 14.06 & 25.12 & 176.69 \\
+      \bottomrule
+    \end{tabular*}
+  \end{datatable}
+  \smalltext{Таблица 5 статьи. При $n=1$ нельзя сменить исходно назначенный центр.}
+  \begin{itemize}\tights
+    \item Основной выигрыш появляется уже при переходе от одного кандидата к двум.
+    \item Дополнительные кандидаты не гарантируют дальнейшего улучшения.
+  \end{itemize}
+  \takeaway{Назначения важны, но поиск ограничен\par
+  исходным набором кандидатов.}
+\end{frame}
+
+\section{DPQ}
+
+% DPQ 1/10.
+\begin{frame}[t]{DPQ: от общего кодбука к подпространствам}
+  \textit{Memory-Efficient Generative Models via Product Quantization.}
+  J.~Shao et al., ICCV 2025.
+
+  \begin{columns}[T,onlytextwidth]
+    \begin{column}{.47\textwidth}
+      \textbf{Один кодбук на матрицу}
+      \[
+        \widehat w_{o,j}=C[a_{o,j}].
+      \]
+      Участки из разных столбцов используют общий набор векторов.
+      Кодбук занимает мало места, но его ёмкость ограничена.
+    \end{column}
+    \begin{column}{.50\textwidth}
+      \textbf{Отдельный кодбук на группу столбцов}
+      \[
+        \widehat w_{o,j}=C_j[a_{o,j}].
+      \]
+      Каждая позиция $j$ получает собственный кодбук.
+      Разные входные признаки больше не обязаны делить одни центры.
+    \end{column}
+  \end{columns}
+  \vspace{3mm}
+  \takeaway{Идея DPQ: сначала увеличить выразительность представления,\par
+  затем сжать сами кодбуки и откалибровать модель.}
+\end{frame}
+
+% DPQ 2/10.
+\begin{frame}[t]{Подпространства: что именно разделяется}
+  Строка матрицы $W\in\mathbb R^{O\times I}$ разбивается на $G=I/d$ частей.
+  Группа $j$ содержит \textbf{одни и те же $d$ столбцов во всех строках}.
+  \[
+    \widehat W_{o,:}=
+      [\,C_1[a_{o,1}]\mid C_2[a_{o,2}]\mid\cdots\mid C_G[a_{o,G}]\,],
+    \qquad C\in\mathbb R^{G\times K\times d}.
+  \]
+  \begin{itemize}\tights
+    \item Пример: $I=1152$, $d=4$ дают $G=288$ кодбуков у одной матрицы.
+    В каждом кодбуке 256 векторов длины 4.
+    \item У каждой из 140 матриц свои группы и кодбуки.
+    Для всех пяти матриц 28 блоков при $d=4$ получается \textbf{64\,512 логических кодбуков}.
+    \item Строки собираются \textbf{конкатенацией}, а не суммой кодовых векторов.
+  \end{itemize}
+  \takeaway{Из $K$ вариантов на каждую из $G$ частей получается до $K^G$\par
+  разных строк. Хранить все эти строки целиком не требуется.}
+\end{frame}
+
+% DPQ 3/10.
+\begin{frame}[t]{Почему много кодбуков не бесплатно}
+  Один индекс кодирует $d$ весов, поэтому номинальный профиль не меняется:
+  \[
+    b_{\mathrm{indices}}=\frac{\log_2 K}{d}.
+  \]
+  При $K=256$: $d=2,3,4,8$ дают $4,\;8/3,\;2,\;1$ бита на вес в индексах.
+  В статье профиль $8/3$ обозначен как трёхбитный.
+  \[
+    \underbrace{S_A=\frac{OI}{d}\cdot8}_{\text{индексы}},\qquad
+    \underbrace{S_C=\frac{I}{d}\cdot Kd\cdot16}_{\text{кодбуки FP16}}.
+  \]
+  \smalltext{Величины $S_A,S_C$ измерены в битах. Без сжатия кодбуков:
+  $b_{\mathrm{target}}=8/d+16K/O$. Для матрицы $1152\times1152$ при $d=4$
+  это $2+3.56=5.56$ бита на вес, а не 2. Расчёт иллюстративный.}
+  \takeaway{Плата за отдельные кодбуки становится существенной.\par
+  Поэтому компрессия кодбуков является частью алгоритма.}
+\end{frame}
+
+% DPQ 4/10. Illustrative values, not a measurement or an extra global pool.
+\begin{frame}[t]{DPQ: близкие векторы хранятся один раз}
+  Пример: две группы \textbf{одной матрицы}, $d=4$. Числа условные.
+  \begin{datatable}
+    \begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}lll@{}}
+      \toprule
+      Запись кодбука & До: четыре числа & После: ссылка в общий пул \\
+      \midrule
+      $C_1[7]$ & $(0.10,\;0.20,\;0.30,\;0.40)$ & $\Pi_{1,7}=5$ \\
+      $C_2[19]$ & $(0.10,\;0.20,\;0.30,\;0.41)$ & $\Pi_{2,19}=5$ \\
+      \bottomrule
+    \end{tabular*}
+  \end{datatable}
+  В пуле хранится одна четвёрка: $P[5]=(0.10,\;0.20,\;0.30,\;0.40)$.
+
+  \[
+    \underbrace{a=19}_{\text{индекс, 8 бит}}
+    \ \longrightarrow\
+    \underbrace{\Pi_{2,19}=5}_{\text{ссылка, 16 бит}}
+    \ \longrightarrow\
+    \underbrace{P[5]}_{\text{четыре числа FP16}}.
+  \]
+  \smalltext{Частые центры рассматриваются первыми; близость проверяется порогом
+  $\tau_c=0.05$. У каждой матрицы свой пул, не один на всю DiT.}
+  \takeaway{Экономия: значения не дублируются в кодбуках групп.\par
+  Цена: таблица ссылок и ошибка от объединения близких центров.}
+\end{frame}
+
+% DPQ 5/10.
+\begin{frame}[t]{Калибровка начинается с настоящих изображений}
+  Для DiT используется обучающая выборка ImageNet.
+  \begin{enumerate}\tights
+    \item Изображение кодируется VAE в чистый латент $z_0$.
+    \item Выбираются время $t$ и \textbf{известный} случайный шум $\varepsilon$.
+    \item Формируется зашумлённый вход по прямому процессу:
+    \[
+      z_t=\sqrt{\bar\alpha_t}\,z_0+
+          \sqrt{1-\bar\alpha_t}\,\varepsilon.
+    \]
+    \item Квантованная сеть обрабатывает $z_t,t,y$.
+    Её входные признаки нужны для уточнения индексов,
+    а предсказанный шум нужен для обучения кодбуков.
+  \end{enumerate}
+  \takeaway{Для одного обновления не требуется проходить всю генерацию.\par
+  Разные времена покрываются новыми обучающими примерами.}
+\end{frame}
+
+% DPQ 6/10.
+\begin{frame}[t]{E-шаг: дискретно перевыбрать назначения}
+  Значения кодбука временно фиксированы. Для вектора весов выбирается центр,
+  лучше всего сохраняющий его вклад в выход слоя.
+  \[
+    a_{o,j}\leftarrow\argmin_k
+      \bigl\|X_j\bigl(w_{o,j}-C_j[k]\bigr)^\top\bigr\|_2^2.
+  \]
+  $X_j$ содержит входные признаки, соответствующие $d$ столбцам группы $j$.
+  \begin{itemize}\tights
+    \item Проверяются все $K$ допустимых вариантов текущего кодбука.
+    Градиент через целый индекс не требуется.
+    \item Эквивалентная запись использует $H_j=X_j^\top X_j$:
+    оценивается $\delta^\top H_j\delta$, где $\delta=w_{o,j}-C_j[k]$.
+    \item Это локальная цель \textbf{по отдельному подпространству}.
+    Перекрёстные члены между группами здесь не оптимизируются совместно.
+  \end{itemize}
+  \takeaway{Ближайший центр по весам может оказаться не лучшим\par
+  по выходу слоя: важны реально поступающие активации.}
+\end{frame}
+
+% DPQ 7/10.
+\begin{frame}[t]{M-шаг: обновить кодбуки по DDPM-loss}
+  Индексы фиксируются, восстановленные веса участвуют в полном проходе DiT.
+  \[
+    \mathcal L_{\mathrm{DDPM}}=
+      \mathbb E_{z_0,t,y,\varepsilon}
+      \|\varepsilon-\varepsilon_{\widehat\theta}(z_t,t,y)\|_2^2,
+    \qquad P\leftarrow P-\eta\,\nabla_P\mathcal L_{\mathrm{DDPM}}.
+  \]
+  \begin{itemize}\tights
+    \item Цель сравнивает \textbf{выход всей сети} с известным добавленным шумом.
+    Это не дистилляция предсказаний исходной модели.
+    \item Градиент проходит через выбор кодовых векторов к их значениям.
+    Если один вектор используется многократно, его градиенты суммируются.
+    \item В статье: AdamW, шаг $10^{-4}$, по умолчанию одна эпоха калибровки DiT.
+  \end{itemize}
+  \smalltext{Приведена шумовая цель из статьи; обучаемая дисперсия исходной DiT
+  также учитывается её стандартной процедурой обучения.}
+  \takeaway{E-шаг меняет индексы перебором, M-шаг меняет значения градиентом.\par
+  Это приближённое EM-чередование, не гарантия монотонного улучшения FID.}
+\end{frame}
+
+% DPQ 8/10.
+\begin{frame}[t]{Что делать с неиспользуемыми центрами}
+  Если на центр долго нет назначений, через него не проходит полезный градиент.
+  Сам по себе кодбук с большим числом записей ещё не означает большую рабочую ёмкость.
+  \begin{enumerate}\tights
+    \item Обновляется небольшой резервуар векторов исходных весов.
+    \item Для центров ведётся возраст с последнего использования;
+    при новом назначении возраст обнуляется.
+    \item Если доля центров с возрастом не менее $\tau_{\mathrm{dead}}=256$
+    превышает 3\%, запускается переинициализация.
+    \item Живые центры объединяются с резервуаром;
+    новые центры получают через k-means++, затем калибровка продолжается.
+  \end{enumerate}
+  \smalltext{Подпространства и начальные кодбуки получают через k-means, 20 итераций.
+  Затем повторяется цикл: назначения $\to$ значения $\to$ проверка использования.}
+  \takeaway{Это поддержание ёмкости кодбука при обучении,\par
+  а не отдельные кодбуки для разных временных окон.}
+\end{frame}
+
+% DPQ 9/10.
+\begin{frame}[t]{DPQ: опубликованные результаты}
+  DiT-XL/2, ImageNet $256\times256$, DDPM250, CFG\,$=1.5$, 10\,000 изображений.
+  \begin{datatable}
+    \begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}llrrrr@{}}
+      \toprule
+      Профиль & Метод & Размер, MB & FID$\downarrow$ & IS$\uparrow$ & Precision$\uparrow$ \\
+      \midrule
+      FP16 & Исходная модель & 1349.4 & 5.41 & 269.84 & 0.8197 \\
+      \midrule
+      2 бита & VQ & 171.7 & 12.34 & 105.67 & 0.6750 \\
+      2 бита & DPQ & 211.3 & 6.84 & 190.99 & 0.7685 \\
+      \midrule
+      1 бит & VQ & 89.1 & 91.71 & 13.51 & 0.2481 \\
+      1 бит & DPQ & 103.9 & 14.03 & 110.23 & 0.6863 \\
+      \bottomrule
+    \end{tabular*}
+  \end{datatable}
+  \smalltext{Таблица 3 статьи. VQ является реализацией авторов DPQ.
+  Профили номинальные, размер модели приведён отдельно.
+  Для DPQ при 2 битах реальное сжатие относительно FP16 составляет $1349.4/211.3=6.39$ раза, не 8.}
+  \takeaway{Особенно сильный выигрыш при 1--2 битах,\par
+  но часть улучшения оплачивается большим объёмом кодбуков.}
+\end{frame}
+
+% DPQ 10/10.
+\begin{frame}[t]{Два разных ответа на одну проблему}
+  \begin{datatable}
+    \begin{tabularx}{\textwidth}{@{}L{31mm}XX@{}}
+      \toprule
+       & VQ4DiT & DPQ \\
+      \midrule
+      Представление & Кодбук на матрицу & Кодбуки групп и сжатый пул \\
+      Данные & Латенты исходной DiT & ImageNet и добавленный шум \\
+      Цель & Выходы исходных блоков & Выход слоя и DDPM-loss \\
+      Назначения & Мягкий выбор кандидатов & Перебор на E-шаге \\
+      Значения & Градиент по ошибке блоков & Градиент по DDPM-loss \\
+      По времени & Один набор при всех $t$ & Один набор при всех $t$ \\
+      \bottomrule
+    \end{tabularx}
+  \end{datatable}
+  \vspace{2mm}
+  \takeaway{VQ4DiT меняет способ выбора вектора и сохраняет признаки блоков.\par
+  DPQ расширяет представление и обучает кодбуки на задаче диффузии.}
+  \smalltext{Сравнивать итоговые числа следует при одинаковых шагах DDPM,
+  фактическом размере модели и явном учёте калибровки.}
+\end{frame}
+
+\end{document}

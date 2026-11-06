@@ -1,97 +1,67 @@
 # Quantization of Diffusion Models
 
-This repository contains research on **post-training quantization of diffusion models**: the completed Stable Diffusion 1.5 coursework and the ongoing diploma project on diffusion transformers.
+Research on compact weight representations for diffusion models: the completed
+Stable Diffusion 1.5 coursework and the current DiT-XL/2 diploma project.
 
-## Current Article: Diffusion Transformers
+## Current Work: Diffusion Transformers
 
-**Adapting Activation-Aware Vector Quantization to Diffusion Transformers**
+The current direction is adapting vector quantization to DiT, not improving RVQ
+at any cost. VQDM was transferred to all 140 matrices in the 28 DiT-XL/2 blocks.
+Subsequent experiments examine temporal sensitivity, separate temporal codebooks,
+training objectives, discrete assignments, and codebook refinement through the network.
 
-[Article PDF](diploma/main.pdf) · [LaTeX](diploma/main.tex) · [Bibliography](diploma/references.bib) · [Project and build instructions](diploma/README.md)
+- [Research context](PROJECT_CONTEXT.md)
+- [Experiments, protocols and limitations](docs/EXPERIMENTS.md)
+- [Processed scientific tables](diploma/run_summaries/README.md)
+- [Article draft](diploma/main.pdf) and [LaTeX](diploma/main.tex)
+- [Local setup and rebuild instructions](RESTORE.md)
 
-The draft includes an abstract, introduction, formal problem statement, and completed initial experiments: transferring VQDM to DiT-XL/2, temporal and structural sensitivity, and controlled codebook-refitting comparisons. Quantitative results and their provenance are in [article_assets/results.json](diploma/article_assets/results.json).
+### Talks
 
-## Completed Coursework: Stable Diffusion 1.5
+| Topic | Slides | Detailed Speaker Notes |
+|---|---|---|
+| DiT experiments: setup, interventions, results and interpretation | [20-slide PDF](diploma/presentation/dit_results_update/dit_results_update.pdf) | [20-page PDF](diploma/presentation/dit_results_update/speaker_notes.pdf) |
+| VQ4DiT and DPQ: architecture, calibration, assignments and codebook storage | [28-slide PDF](diploma/presentation/vq4dit_dpq/review.pdf) | [28-page PDF](diploma/presentation/vq4dit_dpq/speaker_notes.pdf) |
 
-Full coursework PDF: [coursework/coursework_paper/main.pdf](coursework/coursework_paper/main.pdf)
+### Results In Brief
 
-LaTeX source: [coursework/coursework_paper/main.tex](coursework/coursework_paper/main.tex)
+The initial transfer reduces logical whole-DiT storage from a 32-bit baseline
+to 4.1501 bits per parameter, but worsens FID from 6.192 to 15.726 on a common
+10,000-image DDPM50 protocol. Temporal and structural diagnostics motivated
+several refinements; the strongest current signal comes from fitting codebooks
+to the output of the original network.
 
-Experiment summary index: [coursework/run_summaries/README.md](coursework/run_summaries/README.md)
+A three-block pilot reduced the final paired-generation latent error by 4.3–5.6%.
+Fitting all codebooks of the completed VQDM reduced held-out noise-prediction
+error by 13.33% without increasing bit width. These are different measurements.
+The newer FID of 11.045 uses 5,000 generated images and must not be interpreted
+as a measured gain over the older 10,000-image result. A matched initial-model
+control remains necessary in the saved scientific record.
 
----
+### Algorithm Cores
 
-## Repository Overview
+- [Additive codebooks and discrete proposals](diploma/dit_loss_recode/)
+- [Output objectives, deployment rounding and trainable alternatives](diploma/dit_objective_followup/)
+- [Independent DPQ reconstruction and reference searches](diploma/dpq_reproduction/)
+- [VQ4DiT equations and CPU tests](diploma/vq4dit_reproduction/)
 
-```text
-cursovaya/
-|
-|-- coursework/
-|   |-- coursework_paper/  LaTeX source, logo and final coursework PDF
-|   |-- presentation/      research presentation sources and PDFs
-|   |-- rvq/               main RVQ implementation and Hadamard sweep
-|   |-- vqdm/              VQDM baseline adapted to Stable Diffusion 1.5
-|   |-- baselines/         scalar and vector baseline implementations
-|   |-- quant/             larger RVQ ablation experiment
-|   |-- run_summaries/     compact processed result tables
-|   |-- diffusion_quantization_research_map.md
-|   `-- requirements.txt   shared Python dependencies
-`-- diploma/               DiT article, figure, and compact supporting results
-```
+Author repositories for DPQ and VQ4DiT are pinned submodules. Author code,
+independent reconstructions and inspired experiments are deliberately distinguished.
+See [DPQ fidelity boundaries](diploma/dpq_reproduction/fidelity.md).
 
----
+## Completed Coursework
 
-## Research Goal
+Stable Diffusion 1.5, activation-aware RVQ, Hadamard transforms and code refinement:
+[coursework PDF](coursework/coursework_paper/main.pdf),
+[LaTeX](coursework/coursework_paper/main.tex),
+[processed results](coursework/run_summaries/README.md).
+The coursework archive is separate from the DiT study and uses different protocols.
 
-The work studies whether residual vector quantization can approach the quality of stronger AVQ/VQDM-style vector quantization while being cheaper to run.
+## Public Release Boundary
 
-The experiments focus on quantizing the U-Net middle block of Stable Diffusion 1.5. Baselines include scalar PTQ-style methods, lightweight diffusion quantization methods, vanilla vector quantization, AQUATIC-Diff-like quantization and VQDM. The proposed line is an RVQ method with activation-aware optimization, stage-wise codebook sizes, optional Hadamard transforms and post-RVQ code refinement.
-
----
-
-## Implemented Methods
-
-Scalar baselines in [coursework/baselines/](coursework/baselines/):
-
-* Scalar PTQ;
-* Q-Diffusion-lite;
-* PTQ4DM-lite;
-* BitsFusion-lite.
-
-Vector baselines:
-
-* Vanilla VQ;
-* AQUATIC-Diff-lite;
-* VQDM.
-
-Proposed method:
-
-* activation-aware RVQ;
-* fixed and stage-wise codebook profiles;
-* Hadamard/no-Hadamard comparisons;
-* full-XTX post-RVQ recoding;
-* entropy, utilization and effective-bpp statistics.
-
----
-
-## Results
-
-Processed results are stored in [coursework/run_summaries/](coursework/run_summaries/). The most important folders are:
-
-* [baselines_20260523_full_midblock](coursework/run_summaries/baselines_20260523_full_midblock): full-midblock scalar baselines;
-* [baselines_20260524_cluster_completed](coursework/run_summaries/baselines_20260524_cluster_completed): completed 18-layer baseline runs;
-* [baselines_20260525_completed](coursework/run_summaries/baselines_20260525_completed): completed 16-layer vector baselines;
-* [rvq_final_20260531](coursework/run_summaries/rvq_final_20260531): final RVQ sweep;
-* [rvq_hadamard_clean_20260602](coursework/run_summaries/rvq_hadamard_clean_20260602): isolated Hadamard-block experiment;
-* [rvq_jobb_ablation_20260513_14](coursework/run_summaries/rvq_jobb_ablation_20260513_14): earlier RVQ ablations.
-
-The main quality metrics are CLIP image-image similarity, LPIPS, CLIP text-image similarity, PSNR, SSIM and quantization time. Several summaries also report the combined score:
-
-```text
-score = CLIP image-image - LPIPS
-```
-
----
-
-## Main Outcome
-
-VQDM remains the strongest baseline in the saved experiments, but the final RVQ variants get much closer to it than the simpler scalar and lightweight vector baselines while avoiding the expensive AVQ-style search. The most useful RVQ modifications were stage-wise codebook sizes, activation-aware training and full-XTX post-RVQ recoding; Hadamard helps only as a profile-dependent option.
+This is a scientific publication set, not a complete operational backup.
+It includes papers, talks, independent algorithm cores, tests and anonymized
+result tables. It does not add cluster-account details, server paths, node names,
+scheduler receipts or raw cluster snapshots. Credentials, environments, prompt
+datasets, model checkpoints and full ImageNet data are not included.
+The full private working snapshot must be transferred separately when changing machines.

@@ -1,0 +1,6 @@
+[submodule "diploma/dpq_reproduction/upstream"]
+	path = diploma/dpq_reproduction/upstream
+	url = https://github.com/Jie-Shao-NJU/DPQ.git
+[submodule "diploma/vq4dit_reproduction/upstream"]
+	path = diploma/vq4dit_reproduction/upstream
+	url = https://github.com/dengjuncan/VQ4DiT.git

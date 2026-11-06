@@ -1,0 +1,67 @@
+{
+  "study": "VQ4DiT paper-protocol reproduction, not additive VQDM",
+  "paper": "https://ojs.aaai.org/index.php/AAAI/article/download/33782/35937",
+  "author_repository": "https://github.com/dengjuncan/VQ4DiT",
+  "author_commit": "104c62c32c8e09f2eca1b10b3c9223871e43b6a0",
+  "model": "DiT-XL/2",
+  "image_size": 256,
+  "vae": "stabilityai/sd-vae-ft-ema",
+  "vae_revision": "f04b2c4b98319346dad8c65879f680b1997b204a",
+  "vae_sha256": {
+    "config.json": "92d3dfb746fca211a2c9e019e285f8597412211728dce3c5bcf4eda0f2d62e7e",
+    "diffusion_pytorch_model.safetensors": "32db726da04f06c1b6b14c0043ce115cc87a501482945c5add89a40d838fcb46"
+  },
+  "runtime_versions": {
+    "torch": "2.1.1+cu121",
+    "torchvision": "0.16.1+cu121",
+    "timm": "0.6.12",
+    "diffusers": "0.30.2",
+    "numpy": "1.26.4"
+  },
+  "nominal_bits": 2,
+  "k": 256,
+  "d": 4,
+  "candidates": 2,
+  "updates": 500,
+  "batch_images": 16,
+  "cfg_forward_batch": 32,
+  "optimizer": "RMSprop",
+  "codebook_and_block_bias_lr": 0.0001,
+  "ratios_lr": 0.05,
+  "rmsprop_alpha": 0.9,
+  "rmsprop_eps": 1e-8,
+  "reconstruction_weight": 1.0,
+  "polarization_weight": 1.0,
+  "hardening_threshold": 0.0001,
+  "initial_ratios": [0.5, 0.5],
+  "kmeans_iterations": 100,
+  "calibration_sampler": "DDPM50, teacher trajectory only",
+  "cfg_scale": 1.5,
+  "evaluation_steps": [50],
+  "evaluation_count": 10000,
+  "seed": 20261104,
+  "evaluation_seed": 20261005,
+  "precision": "FP32, TF32 disabled, no activation quantization",
+  "loss": "sum of mean squared errors of all 28 block outputs plus sum of per-layer equation9 penalties",
+  "deployment": "one hard index per vector, FP32 codebooks and unquantized parameters; training ratios excluded",
+  "unspecified_details": [
+    "The paper does not state whether batch16 includes CFG duplication. Here it means16 images with32 conditional/unconditional forward records; accumulation preserves this batch.",
+    "RMSprop alpha0.9 and100 Lloyd iterations are taken from the author release; the paper only specifies optimizer and learning rates.",
+    "Block biases are trainable at1e-4 as in the author parameter groups; non-block parameters are frozen.",
+    "The paper does not specify the reduction across layers in equation9. Penalties are normalized by vector count per layer and then summed, like the displayed block reconstruction sum.",
+    "The paper does not publish seeds or exact VAE variant. The author script default ema VAE is pinned by revision and file hashes; the FP control is measured again.",
+    "Sequential teacher DDPM50 states provide500 optimizer updates over10 batches. This follows the stated500 iterations, not the release's50000 updates. The queued reproduction evaluates DDPM50 only."
+  ],
+  "release_differences": [
+    "Missing download, global_var and kmeans_sr imports and inconsistent CLI/compress_model API are bypassed by a separate runner; upstream files remain unchanged.",
+    "Codebooks are trainable jointly with ratios from the beginning, as described by equations10/11, unlike the release's initially frozen books.",
+    "Ratios start equal as stated in section4.1, not inverse-distance-biased as in prepare_sim.",
+    "The equation9 absolute-value polarization is used, not the release's conditional quadratic surrogate.",
+    "Hard assignment is selected by argmax after calibration, whether or not the early-hardening threshold was reached. Evaluation never uses a soft mixture.",
+    "Calibration uses eval mode to avoid independent class-dropout in student and teacher; gradients to codebooks, ratios and block biases remain enabled."
+  ],
+  "paper_targets": {
+    "50": {"original": {"fid": 6.72, "sfid": 21.13, "inception_score": 243.90, "precision": 0.7848}, "vq4dit": {"fid": 12.42, "sfid": 25.16, "inception_score": 209.95, "precision": 0.8725}},
+    "250": {"original": {"fid": 5.33, "sfid": 17.85, "inception_score": 275.13, "precision": 0.8216}, "vq4dit": {"fid": 11.87, "sfid": 23.27, "inception_score": 219.33, "precision": 0.8882}}
+  }
+}

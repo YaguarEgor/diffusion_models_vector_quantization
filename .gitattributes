@@ -1,0 +1,21 @@
+* text=auto
+*.py text eol=lf
+*.sh text eol=lf
+*.sbatch text eol=lf
+*.tex text eol=lf
+*.bib text eol=lf
+*.md text eol=lf
+*.json text eol=lf
+*.csv text eol=lf
+.gitmodules text eol=lf
+*.pdf binary
+*.png binary
+*.jpg binary
+*.pt binary
+*.zip binary
+*.gz binary
+# Verbatim server CSVs retain their CRLF bytes and remote SHA256.
+diploma/run_summaries/dit_followup_20261025/evidence/**/*.csv -text whitespace=cr-at-eol
+# Patch context and frozen archival code intentionally contain trailing spaces.
+diploma/cluster_support/*.patch -whitespace
+diploma/dit_rvq/rvq_core.py -whitespace

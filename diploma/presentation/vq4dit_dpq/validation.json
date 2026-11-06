@@ -1,0 +1,306 @@
+{
+  "validated": true,
+  "slides": 28,
+  "section_counts": [
+    8,
+    10,
+    10
+  ],
+  "tex_overflows": 0,
+  "text_inside_page": true,
+  "all_pages_nonblank": true,
+  "page_bounds": [
+    {
+      "slide": 1,
+      "words": 45,
+      "bottom": 206.110146,
+      "page_height": 255.12
+    },
+    {
+      "slide": 2,
+      "words": 98,
+      "bottom": 227.901146,
+      "page_height": 255.12
+    },
+    {
+      "slide": 3,
+      "words": 111,
+      "bottom": 227.443146,
+      "page_height": 255.12
+    },
+    {
+      "slide": 4,
+      "words": 127,
+      "bottom": 251.130146,
+      "page_height": 255.12
+    },
+    {
+      "slide": 5,
+      "words": 114,
+      "bottom": 244.433146,
+      "page_height": 255.12
+    },
+    {
+      "slide": 6,
+      "words": 133,
+      "bottom": 237.844146,
+      "page_height": 255.12
+    },
+    {
+      "slide": 7,
+      "words": 107,
+      "bottom": 240.034146,
+      "page_height": 255.12
+    },
+    {
+      "slide": 8,
+      "words": 119,
+      "bottom": 229.781146,
+      "page_height": 255.12
+    },
+    {
+      "slide": 9,
+      "words": 93,
+      "bottom": 233.265146,
+      "page_height": 255.12
+    },
+    {
+      "slide": 10,
+      "words": 131,
+      "bottom": 226.116146,
+      "page_height": 255.12
+    },
+    {
+      "slide": 11,
+      "words": 92,
+      "bottom": 242.570146,
+      "page_height": 255.12
+    },
+    {
+      "slide": 12,
+      "words": 120,
+      "bottom": 240.890146,
+      "page_height": 255.12
+    },
+    {
+      "slide": 13,
+      "words": 113,
+      "bottom": 244.313146,
+      "page_height": 255.12
+    },
+    {
+      "slide": 14,
+      "words": 113,
+      "bottom": 233.989146,
+      "page_height": 255.12
+    },
+    {
+      "slide": 15,
+      "words": 127,
+      "bottom": 238.935146,
+      "page_height": 255.12
+    },
+    {
+      "slide": 16,
+      "words": 110,
+      "bottom": 235.952146,
+      "page_height": 255.12
+    },
+    {
+      "slide": 17,
+      "words": 100,
+      "bottom": 246.757146,
+      "page_height": 255.12
+    },
+    {
+      "slide": 18,
+      "words": 73,
+      "bottom": 236.309146,
+      "page_height": 255.12
+    },
+    {
+      "slide": 19,
+      "words": 87,
+      "bottom": 181.179146,
+      "page_height": 255.12
+    },
+    {
+      "slide": 20,
+      "words": 138,
+      "bottom": 226.509146,
+      "page_height": 255.12
+    },
+    {
+      "slide": 21,
+      "words": 130,
+      "bottom": 249.297146,
+      "page_height": 255.12
+    },
+    {
+      "slide": 22,
+      "words": 125,
+      "bottom": 241.655146,
+      "page_height": 255.12
+    },
+    {
+      "slide": 23,
+      "words": 89,
+      "bottom": 221.527146,
+      "page_height": 255.12
+    },
+    {
+      "slide": 24,
+      "words": 122,
+      "bottom": 239.454146,
+      "page_height": 255.12
+    },
+    {
+      "slide": 25,
+      "words": 122,
+      "bottom": 241.376146,
+      "page_height": 255.12
+    },
+    {
+      "slide": 26,
+      "words": 113,
+      "bottom": 237.374146,
+      "page_height": 255.12
+    },
+    {
+      "slide": 27,
+      "words": 100,
+      "bottom": 249.691146,
+      "page_height": 255.12
+    },
+    {
+      "slide": 28,
+      "words": 93,
+      "bottom": 228.762146,
+      "page_height": 255.12
+    }
+  ],
+  "contact_sheets": [
+    "contact_1.png",
+    "contact_2.png",
+    "contact_3.png",
+    "contact_4.png"
+  ],
+  "pdf_sha256": "633c5d62779f15982df34a53bbf6fbf6295876dd35e308ddf4adb90c0816d356",
+  "speaker_notes_pages": 28,
+  "notes_geometry": "passed",
+  "notes_counts": [
+    {
+      "slide": 1,
+      "words": 218
+    },
+    {
+      "slide": 2,
+      "words": 243
+    },
+    {
+      "slide": 3,
+      "words": 276
+    },
+    {
+      "slide": 4,
+      "words": 239
+    },
+    {
+      "slide": 5,
+      "words": 239
+    },
+    {
+      "slide": 6,
+      "words": 268
+    },
+    {
+      "slide": 7,
+      "words": 226
+    },
+    {
+      "slide": 8,
+      "words": 227
+    },
+    {
+      "slide": 9,
+      "words": 244
+    },
+    {
+      "slide": 10,
+      "words": 251
+    },
+    {
+      "slide": 11,
+      "words": 250
+    },
+    {
+      "slide": 12,
+      "words": 255
+    },
+    {
+      "slide": 13,
+      "words": 229
+    },
+    {
+      "slide": 14,
+      "words": 219
+    },
+    {
+      "slide": 15,
+      "words": 264
+    },
+    {
+      "slide": 16,
+      "words": 240
+    },
+    {
+      "slide": 17,
+      "words": 234
+    },
+    {
+      "slide": 18,
+      "words": 227
+    },
+    {
+      "slide": 19,
+      "words": 214
+    },
+    {
+      "slide": 20,
+      "words": 249
+    },
+    {
+      "slide": 21,
+      "words": 246
+    },
+    {
+      "slide": 22,
+      "words": 257
+    },
+    {
+      "slide": 23,
+      "words": 241
+    },
+    {
+      "slide": 24,
+      "words": 255
+    },
+    {
+      "slide": 25,
+      "words": 246
+    },
+    {
+      "slide": 26,
+      "words": 227
+    },
+    {
+      "slide": 27,
+      "words": 219
+    },
+    {
+      "slide": 28,
+      "words": 238
+    }
+  ],
+  "notes_sha256": "e99efeaa36fd493d736d6b833e33a1945b55cdb09f93496bb32bb26e4ccf9d67"
+}
