@@ -1,5 +1,9 @@
 # DiT Scientific Result Tables
 
+Latest matched10k KD500 snapshot: [results and protocol](vqdm_kd500_matched_10k_20261112/).
+Article/practicum artifacts: [my_first_article](https://github.com/YaguarEgor/my_first_article).
+
+
 The tables preserve measured values, calibration/evaluation settings and uncertainty.
 Operational identifiers, machine names and server locations are omitted in this public edition.
 Column labels identifying experiment families remain meaningful; numeric metrics are unchanged.
@@ -24,3 +28,4 @@ These are dates of saved scientific records, not live scheduler status.
 - `training_time.csv`: training-only timings, not a controlled hardware speed comparison.
 
 Do not turn a 10,000-image baseline and a 5,000-image candidate into a claimed FID gain.
+

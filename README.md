@@ -13,7 +13,7 @@ training objectives, discrete assignments, and codebook refinement through the n
 - [Research context](PROJECT_CONTEXT.md)
 - [Experiments, protocols and limitations](docs/EXPERIMENTS.md)
 - [Processed scientific tables](diploma/run_summaries/README.md)
-- [Article draft](diploma/main.pdf) and [LaTeX](diploma/main.tex)
+- [Article, practicum slides and three-minute talk](https://github.com/YaguarEgor/my_first_article)
 - [Local setup and rebuild instructions](RESTORE.md)
 
 ### Talks
@@ -25,18 +25,23 @@ training objectives, discrete assignments, and codebook refinement through the n
 
 ### Results In Brief
 
-The initial transfer reduces logical whole-DiT storage from a 32-bit baseline
-to 4.1501 bits per parameter, but worsens FID from 6.192 to 15.726 on a common
-10,000-image DDPM50 protocol. Temporal and structural diagnostics motivated
-several refinements; the strongest current signal comes from fitting codebooks
-to the output of the original network.
+The completed matched10k experiment uses DiT-XL/2, ImageNet256, DDPM50,
+CFG1.5, MSE VAE and the same paired noise/class records (selection seed20261103).
+FID is6.097989 for FP,15.401847 for transferred layerwise-only VQDM and
+7.814155 after500 codebook-only KD updates. Logical whole-DiT storage stays
+4.150078 bits/parameter; assignments, scales and all other parameters are fixed.
+Recall falls from0.7115 to0.6770. This is one fixed run, not an across-seed guarantee.
+See the [scientific measurement snapshot](diploma/run_summaries/vqdm_kd500_matched_10k_20261112/).
 
-A three-block pilot reduced the final paired-generation latent error by 4.3–5.6%.
-Fitting all codebooks of the completed VQDM reduced held-out noise-prediction
-error by 13.33% without increasing bit width. These are different measurements.
-The newer FID of 11.045 uses 5,000 generated images and must not be interpreted
-as a measured gain over the older 10,000-image result. A matched initial-model
-control remains necessary in the saved scientific record.
+Earlier temporal/structural diagnostics and negative results remain in this
+repository. Their older10k or5k cohorts are separate protocols and must not
+be mixed with this matched comparison. VQDM already proposes global
+teacher-output fine-tuning for U-Net; the present experiment checks a
+restricted DiT transfer, not a new distillation algorithm.
+
+The article and practicum-specific slides have moved to
+[my_first_article](https://github.com/YaguarEgor/my_first_article), including
+historical drafts with operational JSON metadata removed. Research code and scientific data remain here.
 
 ### Algorithm Cores
 
@@ -65,3 +70,4 @@ result tables. It does not add cluster-account details, server paths, node names
 scheduler receipts or raw cluster snapshots. Credentials, environments, prompt
 datasets, model checkpoints and full ImageNet data are not included.
 The full private working snapshot must be transferred separately when changing machines.
+

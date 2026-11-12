@@ -69,8 +69,10 @@ For the article review, work in `diploma/presentation/vq4dit_dpq` and use
 `review.tex` instead of `dit_results_update.tex`; compile the notes twice
 and run its `verify_pdf.py` in the same way.
 
-The article can be rebuilt from `diploma/main.tex` with XeLaTeX and BibTeX.
-Its draft describes an earlier stage; the new tables and talks contain later work.
+The article and practicum-specific slides are maintained in
+[my_first_article](https://github.com/YaguarEgor/my_first_article). Its README describes rebuilding
+the current manuscript and talks. The earlier draft and its exact dependencies
+are preserved there under `archive/pre_kd_draft/`. Research talks above remain here.
 
 ## What Must Be Restored Privately
 
@@ -79,3 +81,4 @@ infrastructure settings and complete machine-migration records are not on GitHub
 Transfer them independently or recover access through the relevant administrator.
 Never attach passwords, private keys or access tokens to a public issue or commit.
 The public checkout alone does not reproduce access to an existing remote environment.
+

@@ -2,7 +2,6 @@
   "snapshot_utc": "2026-10-21T19:33:22.058310+00:00",
   "baseline": [
     {
-      "job_id": "4382060",
       "method": "original",
       "n_samples": "10000",
       "entire_dit_bpp": "32.0",
@@ -13,7 +12,6 @@
       "recall": "0.6554"
     },
     {
-      "job_id": "4382060",
       "method": "vqdm",
       "n_samples": "10000",
       "entire_dit_bpp": "4.150078010499767",
@@ -73,7 +71,6 @@
   ],
   "middle_window_1000": {
     "experiment": "window_repair",
-    "job_id": "4401468",
     "case": "vqdm_middle",
     "method": "vqdm",
     "intervention": "middle",
@@ -344,36 +341,22 @@
   },
   "archived_summaries": {
     "windows_fp": {
-      "path": "eval_results/dit_followup_20261016/windows_fp_4412613/summary.json",
       "sha256": "bdf725ef04988f2b212ca4368ffd1060710abf4a9b2bc7361a44585f6a68a2e2"
     },
     "windows_q": {
-      "path": "eval_results/dit_followup_20261016/windows_q_4412614/summary.json",
       "sha256": "5e79044f942c4313b2c271217be08e52b43432a78d86c188c324edf470cd629f"
     },
     "adaln_parts": {
-      "path": "eval_results/dit_followup_20261016/adaln_parts_4412617/summary.json",
       "sha256": "a86e35f0d0b4b570521efd2c04eec79a0f1cb87c56b7ed25c46d0b1ba6ddffea"
     },
     "heads": {
-      "path": "eval_results/dit_followup_20261016/heads_4412615/summary.json",
       "sha256": "6eeae66b4d9a62f2f8d6675f5713bd0e34e5fbf2bd469729219cbccb6b61f74a"
     },
     "e3_weighted": {
-      "path": "eval_results/dit_continue_e3_weighted_4410193/summary.json",
       "sha256": "8e5c50f3246c059771e4b9dc18afc9e2eea10888a9a800580dc180a1910b5616"
     },
     "e4_temporal": {
-      "path": "eval_results/dit_continue_e4_temporal_4410194/summary.json",
       "sha256": "1074ce555daf755a9ac9d72d6a0926bb956ebf0c7c84a6f8c860ace9239fb529"
     }
-  },
-  "sources_sha256": {
-    "run_summaries\\dit_completed_20261016\\baseline_quality.csv": "ccc383f92fe69ffd13c1cda59e7d7dc96492cb4f7feb9367d49b172175ed2755",
-    "run_summaries\\dit_completed_20261016\\family_restoration.csv": "0bd20e56aca5525c3babb6ba395ede507106a47cbc1ede141023468c5e35d934",
-    "run_summaries\\dit_completed_20261016\\paired_effects.csv": "8fab8e6ba99ce9e3650836512603622fbd803ec7e9ee10a3dabc815479eaabe2",
-    "presentation\\data\\quantization_snapshot.json": "1b653a0af9883afb77b066c5aacca3174a5acbb9bb8e74c9e9cdef232f90de25",
-    "dit_metrics\\published_ddpm50.csv": "84d8aedcd1439623fed76730d8eabb6e591fcca7dc88253aa90e4d6f63be02fd",
-    "presentation\\dit_overview\\data\\cluster_snapshot.json": "27877532d52ef354de13179c2d773a0fd983a704e3ebda92c191b733305224ee"
   }
 }
