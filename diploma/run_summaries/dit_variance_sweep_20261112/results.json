@@ -1,0 +1,125 @@
+{
+  "schema": 1,
+  "snapshot_date": "2026-11-12",
+  "objective": "MSE(epsilon_Q,epsilon_T)+lambda*MSE(raw_variance_Q,raw_variance_T)",
+  "model": "DiT-XL/2 ImageNet256, additive VQDM M4/K256/d8",
+  "whole_dit_bpp": 4.150078010499767,
+  "training": {
+    "updates": 500,
+    "effective_batch": 16,
+    "optimizer": "Adam",
+    "learning_rate": 1e-05,
+    "batch_seed": 20261025,
+    "train_latents": 4000,
+    "reserved_latents": 1000,
+    "fixed_probe_pairs": 96,
+    "selection": "minimum held-out epsilon MSE at steps 0,50,100,200,500; earlier on ties; before FID",
+    "trainable": "codebook values only; assignments, scales, biases and other weights fixed"
+  },
+  "evaluation": {
+    "count": 10000,
+    "sampler": "DDPM",
+    "steps": 50,
+    "cfg_scale": 1.5,
+    "vae": "stabilityai/sd-vae-ft-mse",
+    "dtype": "float32",
+    "tf32": false,
+    "attention": "math SDP",
+    "selection_seed": 20261103,
+    "samples_csv_sha256": "a94f7c581876af4a0ecbd37287c9436e93d46bdf38f238211ecf8d20cdf3cc2a",
+    "metrics": [
+      "FID",
+      "sFID",
+      "IS",
+      "precision",
+      "recall"
+    ],
+    "evaluation_after_successful_training": true
+  },
+  "results": [
+    {
+      "variance_weight": 0.0,
+      "status": "complete",
+      "selected_step": 500,
+      "n_samples": 10000,
+      "fid": 7.847127385379849,
+      "sfid": 23.425869888521902,
+      "inception_score": 210.98802185058594,
+      "precision": 0.7409,
+      "recall": 0.6769,
+      "manifest_sha256": "24552622430873d06168ad6fb35fd4a1f7c3e7c962ad365047e6da62c2e503c7",
+      "evaluator_sha256": "c8f10ab1406c45d105d7f5b347e5be06c118bd2ddef1c54789c263ebae7f1ca7"
+    },
+    {
+      "variance_weight": 0.1,
+      "status": "complete",
+      "selected_step": 500,
+      "n_samples": 10000,
+      "fid": 7.814155412320247,
+      "sfid": 23.367293266192746,
+      "inception_score": 211.5491943359375,
+      "precision": 0.7427,
+      "recall": 0.677,
+      "manifest_sha256": "dfeee3e1650d2b4c9d14a6bae9e0ea69099298ca57650f1296e0c11a1353c946",
+      "evaluator_sha256": "c8f10ab1406c45d105d7f5b347e5be06c118bd2ddef1c54789c263ebae7f1ca7"
+    },
+    {
+      "variance_weight": 0.5,
+      "status": "submitted_pending_scheduler",
+      "metrics": null
+    },
+    {
+      "variance_weight": 1.0,
+      "status": "submitted_pending_scheduler",
+      "metrics": null
+    },
+    {
+      "variance_weight": 2.0,
+      "status": "submitted_pending_scheduler",
+      "metrics": null
+    }
+  ],
+  "preparation_checks": {
+    "status": "complete",
+    "device": "cpu",
+    "loss_and_gradient_checks": [
+      {
+        "weight": 0.0,
+        "loss": 4.0,
+        "variance_gradient": 0.0
+      },
+      {
+        "weight": 0.1,
+        "loss": 6.5,
+        "variance_gradient": 0.0625
+      },
+      {
+        "weight": 0.5,
+        "loss": 16.5,
+        "variance_gradient": 0.3125
+      },
+      {
+        "weight": 1.0,
+        "loss": 29.0,
+        "variance_gradient": 0.625
+      },
+      {
+        "weight": 2.0,
+        "loss": 54.0,
+        "variance_gradient": 1.25
+      }
+    ],
+    "baseline_lambda_0p1_parity": true,
+    "epsilon_only_parity": true,
+    "teacher_gradients_absent": true,
+    "invalid_weights_rejected": true,
+    "real_frozen_verifier_with_10k_boundary": true,
+    "gpu_execution": false
+  },
+  "limitations": [
+    "One fixed run per coefficient; no across-training-seed confidence interval",
+    "MSE targets the raw learned-variance head, not variance itself or DDPM variational bound",
+    "Checkpoint selection uses held-out epsilon MSE for every coefficient",
+    "Submitted jobs are not completed model-quality results"
+  ]
+}
